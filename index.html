@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Medley Mbugua — Industrial Mechatronics engineer. Robotics, embedded systems, automation, CAD and electronics." />
+  <meta name="theme-color" content="#F1E8D4" />
+  <title>Medley Mbugua — Industrial Mechatronics Engineer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- Enables the scroll animations only when JavaScript runs, so content is never hidden without it -->
+  <script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- Scroll progress: a weld bead that grows as you read -->
+  <div class="progress" aria-hidden="true">
+    <div class="progress__bar" id="progressBar"></div>
+    <div class="progress__head" id="progressHead"></div>
+  </div>
+
+  <!-- NAVIGATION -->
+  <header class="nav" id="nav">
+    <div class="nav__inner container">
+      <a href="#hero" class="nav__logo" aria-label="Medley Mbugua, back to top">MM</a>
+      <button class="nav__toggle" id="navToggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span>
+      </button>
+      <nav class="nav__links" id="navLinks" aria-label="Primary">
+        <a href="#about" class="nav__link">About</a>
+        <a href="#diagram" class="nav__link">Skills</a>
+        <a href="#projects" class="nav__link">Projects</a>
+        <a href="#coursework" class="nav__link">Coursework</a>
+        <a href="#contact" class="nav__link">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- HERO -->
+    <section class="hero" id="hero" aria-labelledby="heroHeading">
+      <div class="hero__grid" aria-hidden="true"></div>
+      <div class="hero__inner container">
+        <div class="hero__text">
+          <p class="hero__tag">Industrial Mechatronics, class of 2026</p>
+          <h1 class="hero__name" id="heroHeading">
+            <span class="line"><span>Medley</span></span>
+            <span class="line"><span>Mbugua</span></span>
+          </h1>
+          <p class="hero__lead">I build things that think.</p>
+          <p class="hero__sub">
+            Engineering student working at the intersection of mechanics, electronics
+            and intelligent software — turning physical systems into smart ones.
+          </p>
+          <div class="hero__cta">
+            <a href="#projects" class="btn btn--primary">View projects</a>
+            <a href="#contact" class="btn btn--ghost">Get in touch</a>
+          </div>
+        </div>
+
+        <!-- Welding scene. Geometry is driven by js/weld.js -->
+        <figure class="scene" id="weldScene">
+          <svg id="weld" viewBox="64 104 484 366" role="img"
+               aria-label="Line illustration of a welder in a mask joining two steel plates on a workbench, with sparks flying from the arc.">
+            <defs>
+              <radialGradient id="arcGlow">
+                <stop offset="0"    stop-color="#FFF6D6" />
+                <stop offset="0.22" stop-color="#FFC15A" stop-opacity="0.95" />
+                <stop offset="0.6"  stop-color="#FF7A1A" stop-opacity="0.35" />
+                <stop offset="1"    stop-color="#FF7A1A" stop-opacity="0" />
+              </radialGradient>
+            </defs>
+
+            <!-- floor, bench and legs -->
+            <path class="w-line" d="M40 450H548" />
+            <g class="w-ink">
+              <rect x="236" y="290" width="304" height="10" />
+              <rect x="250" y="300" width="9" height="150" />
+              <rect x="517" y="300" width="9" height="150" />
+            </g>
+            <path class="w-line w-thin" d="M259 396H517" />
+
+            <!-- steel plates on the bench -->
+            <path class="plate-top"   d="M270 274H470L498 254H298Z" />
+            <path class="plate-front" d="M270 274H470V290H270Z" />
+            <path class="plate-side"  d="M470 274L498 254V270L470 290Z" />
+            <path class="w-seam"      d="M284 264H484" />
+
+            <!-- weld bead: cool, warm and hot sections -->
+            <g id="bead" fill="none" stroke-linecap="round" stroke-width="4.5">
+              <line id="beadCool" y1="264" y2="264" stroke="#5F5848" />
+              <line id="beadWarm" y1="264" y2="264" stroke="#AD2915" />
+              <line id="beadHot"  y1="264" y2="264" stroke="#FF8A2A" />
+            </g>
+            <ellipse id="plateGlow" cx="0" cy="264" rx="58" ry="10" fill="url(#arcGlow)" opacity="0" />
+
+            <!-- welder -->
+            <g id="fig">
+              <path id="cable" class="w-body" stroke-width="3" d="M0 0" />
+              <path class="w-body w-back" stroke-width="16" d="M150 274L152 364L146 442" />
+              <path class="w-body" stroke-width="18" d="M162 274L174 364L166 442" />
+              <path class="w-body" stroke-width="10" d="M150 447H196" />
+              <line id="torso" class="w-body" stroke-width="40" x1="160" y1="274" x2="222" y2="184" />
+              <g id="head">
+                <circle r="26" class="w-ink" />
+                <rect x="-6" y="-8" width="46" height="38" rx="11" class="w-ink" />
+                <rect x="14" y="2" width="22" height="11" rx="3" fill="#3A2A16" />
+                <rect id="visorGlow" x="14" y="2" width="22" height="11" rx="3" fill="#FFB347" opacity="0" />
+                <path d="M-22 -10Q-2 -32 22 -14" fill="none" stroke="#AD2915" stroke-width="4" stroke-linecap="round" />
+              </g>
+              <path id="armOutline" class="w-body w-outline" stroke-width="18" d="M0 0" />
+              <path id="armPath"    class="w-body" stroke-width="12" d="M0 0" />
+              <line id="torch"  class="w-body" stroke-width="7" />
+              <line id="nozzle" class="w-body w-nozzle" stroke-width="9" />
+              <circle id="glove" r="8" fill="#AD2915" />
+            </g>
+
+            <!-- arc and sparks -->
+            <circle id="arcGlowDot" r="28" fill="url(#arcGlow)" opacity="0" />
+            <circle id="arcCore" r="3.4" fill="#FFFFFF" opacity="0" />
+            <g id="sparks" fill="none" stroke-linecap="round" stroke-width="2.4"></g>
+          </svg>
+          <button class="scene__pause" id="weldPause" type="button" aria-pressed="false" aria-label="Pause animation">
+            <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14" /></svg>
+            <svg class="icon-play"  viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z" /></svg>
+          </button>
+        </figure>
+      </div>
+    </section>
+
+    <!-- DISCIPLINES -->
+    <section class="disciplines" aria-label="Discipline areas">
+      <div class="container">
+        <ul class="disciplines__list">
+          <li class="disciplines__item">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.8"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2 2M16.4 16.4l2 2M18.4 5.6l-2 2M7.6 16.4l-2 2"/></svg>
+            Robotics
+          </li>
+          <li class="disciplines__item">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"/><path d="M10 7V4M14 7V4M10 20v-3M14 20v-3M7 10H4M7 14H4M20 10h-3M20 14h-3"/></svg>
+            Embedded systems
+          </li>
+          <li class="disciplines__item">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="15" width="18" height="3.5" rx="1.75"/><rect x="6" y="9" width="5" height="6"/><rect x="14" y="11" width="4" height="4"/></svg>
+            Industrial automation
+          </li>
+          <li class="disciplines__item">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>
+            CAD / 3D design
+          </li>
+          <li class="disciplines__item">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h5l2-5 3 10 3-10 2 5h5"/></svg>
+            Electronics
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="about" id="about" aria-labelledby="aboutHeading">
+      <div class="container about__inner">
+        <div class="about__text">
+          <p class="section-label" data-reveal="label">About</p>
+          <h2 class="section-heading" id="aboutHeading" data-reveal="mask">
+            <span class="line"><span>Precision thinking.</span></span>
+            <span class="line"><span>Practical building.</span></span>
+          </h2>
+          <p class="about__body">
+            I am an Industrial Mechatronics student passionate about designing systems
+            that merge the physical and digital worlds. My coursework has given me
+            foundations in mechanical design, electronic circuits, programmable logic
+            controllers and control systems.
+          </p>
+          <p class="about__body">
+            Outside lectures, I explore microcontroller projects, 3D-print functional
+            prototypes and read everything I can about autonomous robotics and smart
+            manufacturing. I believe the next generation of engineers must be fluent
+            in software as much as hardware.
+          </p>
+          <!-- Edit these facts to match your real details -->
+          <ul class="about__facts">
+            <li class="about__fact" data-reveal="rule" style="--i:0"><strong>Programme</strong><span>Diploma in Industrial Mechatronics</span></li>
+            <li class="about__fact" data-reveal="rule" style="--i:1"><strong>Year</strong><span>2026</span></li>
+            <li class="about__fact" data-reveal="rule" style="--i:2"><strong>Location</strong><span>Kenya</span></li>
+            <li class="about__fact" data-reveal="rule" style="--i:3"><strong>Interests</strong><span>Robotics, automation, open-source hardware</span></li>
+          </ul>
+        </div>
+        <div class="about__visual" data-reveal="cut">
+          <div class="about__avatar">
+            <img src="photo.jpg" alt="Portrait of Medley Mbugua Kimani" width="560" height="560" loading="lazy" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SKILL DIAGRAM (built by js/diagram.js) -->
+    <section class="diagram" id="diagram" aria-labelledby="diagramHeading">
+      <div class="container">
+        <p class="section-label" data-reveal="label">Skill architecture</p>
+        <h2 class="section-heading" id="diagramHeading" data-reveal="mask">
+          <span class="line"><span>How my disciplines connect.</span></span>
+        </h2>
+        <p class="diagram__hint" id="diagramHint">Select a discipline to see how it connects.</p>
+        <figure class="diagram__figure" id="diagramFigure">
+          <svg id="diagramSvg" class="diagram__svg" role="group"
+               aria-label="Skill architecture diagram. Seven disciplines attach to a central Mechatronics bus."
+               aria-describedby="diagramHint"></svg>
+          <div class="readout" id="diagramReadout" aria-live="polite">
+            <h3 class="readout__name" id="readoutName">Mechatronics</h3>
+            <p class="readout__desc" id="readoutDesc"></p>
+            <p class="readout__links" id="readoutLinks"></p>
+          </div>
+        </figure>
+        <noscript>
+          <p class="diagram__hint">The interactive diagram needs JavaScript. My disciplines: Mechatronics, Mechanics, Electronics, Software, CAD, PLC, Robotics and Automation.</p>
+        </noscript>
+      </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section class="projects" id="projects" aria-labelledby="projectsHeading">
+      <div class="container">
+        <p class="section-label" data-reveal="label">Work</p>
+        <h2 class="section-heading" id="projectsHeading" data-reveal="mask">
+          <span class="line"><span>Projects.</span></span>
+        </h2>
+
+        <div class="projects__tabs" role="tablist" aria-label="Project categories">
+          <button class="projects__tab" type="button" role="tab" aria-selected="true"  aria-controls="panel-completed" id="tab-completed" tabindex="0">Completed</button>
+          <button class="projects__tab" type="button" role="tab" aria-selected="false" aria-controls="panel-ideas"     id="tab-ideas"     tabindex="-1">Future ideas</button>
+        </div>
+
+        <!-- Completed projects -->
+        <div id="panel-completed" role="tabpanel" aria-labelledby="tab-completed" class="projects__panel">
+          <div class="projects__grid">
+
+            <!-- PROJECT CARD: edit or duplicate this block for each project (keep style="--i:n" as the card's position in the row) -->
+            <article class="project-card" data-reveal="cut" style="--i:0">
+              <div class="project-card__header">
+                <span class="project-card__status project-card__status--done">Completed</span>
+                <span class="project-card__number" aria-hidden="true">01</span>
+              </div>
+              <h3 class="project-card__title">Automatic Line-Following Robot</h3>
+              <p class="project-card__desc">
+                Built a differential-drive robot that follows a black line on a white surface
+                using IR sensors and a PID control loop implemented on an Arduino Uno.
+                Competed in a departmental challenge.
+              </p>
+              <ul class="project-card__tags" aria-label="Technologies used">
+                <li>Arduino</li><li>C++</li><li>PID Control</li><li>IR Sensors</li>
+              </ul>
+            </article>
+
+            <article class="project-card" data-reveal="cut" style="--i:1">
+              <div class="project-card__header">
+                <span class="project-card__status project-card__status--done">Completed</span>
+                <span class="project-card__number" aria-hidden="true">02</span>
+              </div>
+              <h3 class="project-card__title">Temperature-Controlled Fan System</h3>
+              <p class="project-card__desc">
+                Designed a closed-loop temperature regulation system using a thermocouple,
+                microcontroller and PWM-driven DC fan. Included an OLED display for real-time
+                monitoring.
+              </p>
+              <ul class="project-card__tags" aria-label="Technologies used">
+                <li>ATmega328</li><li>PWM</li><li>I²C</li><li>OLED</li>
+              </ul>
+            </article>
+
+            <article class="project-card" data-reveal="cut" style="--i:2">
+              <div class="project-card__header">
+                <span class="project-card__status project-card__status--done">Completed</span>
+                <span class="project-card__number" aria-hidden="true">03</span>
+              </div>
+              <h3 class="project-card__title">Conveyor Belt PLC Simulation</h3>
+              <p class="project-card__desc">
+                Programmed a simulated conveyor sorting system using Ladder Logic on a PLC
+                trainer kit. Implemented start/stop interlocking, sensor-triggered diverters
+                and alarm outputs.
+              </p>
+              <ul class="project-card__tags" aria-label="Technologies used">
+                <li>PLC</li><li>Ladder Logic</li><li>HMI</li><li>Automation</li>
+              </ul>
+            </article>
+
+          </div>
+        </div>
+
+        <!-- Future ideas -->
+        <div id="panel-ideas" role="tabpanel" aria-labelledby="tab-ideas" class="projects__panel" hidden>
+          <div class="projects__grid">
+
+            <article class="project-card project-card--idea" data-reveal="cut" style="--i:0">
+              <div class="project-card__header">
+                <span class="project-card__status project-card__status--idea">In progress</span>
+                <span class="project-card__number" aria-hidden="true">01</span>
+              </div>
+              <h3 class="project-card__title">6-DOF Robotic Arm</h3>
+              <p class="project-card__desc">
+                Planning a 3D-printed 6-axis robotic arm with servo actuation, inverse
+                kinematics and a simple GUI for teleoperation. Long-term goal is computer
+                vision pick-and-place.
+              </p>
+              <ul class="project-card__tags" aria-label="Technologies used">
+                <li>ROS</li><li>Python</li><li>Servos</li><li>OpenCV</li><li>FDM Print</li>
+              </ul>
+            </article>
+
+            <article class="project-card project-card--idea" data-reveal="cut" style="--i:1">
+              <div class="project-card__header">
+                <span class="project-card__status project-card__status--idea">Planned</span>
+                <span class="project-card__number" aria-hidden="true">02</span>
+              </div>
+              <h3 class="project-card__title">Smart Factory Dashboard</h3>
+              <p class="project-card__desc">
+                Concept for an IoT sensor network inside a lab environment, feeding real-time
+                data to a web dashboard. Aims to demonstrate Industry 4.0 principles with off-the-shelf hardware.
+              </p>
+              <ul class="project-card__tags" aria-label="Technologies used">
+                <li>ESP32</li><li>MQTT</li><li>Node-RED</li><li>IoT</li>
+              </ul>
+            </article>
+
+            <article class="project-card project-card--idea" data-reveal="cut" style="--i:2">
+              <div class="project-card__header">
+                <span class="project-card__status project-card__status--idea">Exploring</span>
+                <span class="project-card__number" aria-hidden="true">03</span>
+              </div>
+              <h3 class="project-card__title">Exoskeleton Assist Joint</h3>
+              <p class="project-card__desc">
+                Researching a single-joint assistive exoskeleton prototype to explore
+                biomechanics, servo control and human-machine interaction. Early-stage concept.
+              </p>
+              <ul class="project-card__tags" aria-label="Technologies used">
+                <li>Biomechanics</li><li>Servo</li><li>EMG</li><li>SolidWorks</li>
+              </ul>
+            </article>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ░░ COURSEWORK & EVIDENCE ░░ -->
+    <section class="coursework" id="coursework" aria-labelledby="courseworkHeading">
+      <div class="container">
+        <p class="section-label" data-reveal="label">Coursework</p>
+        <h2 class="section-heading" id="courseworkHeading" data-reveal="mask">
+          <span class="line"><span>Coursework &amp; Evidence</span></span>
+        </h2>
+
+        <dl class="student">
+          <div><dt>Name</dt><dd>Medley Mbugua Kimani</dd></div>
+          <div><dt>Admission number</dt><dd>DIM/0433/26</dd></div>
+          <div><dt>Programme</dt><dd>Diploma in Industrial Mechatronics</dd></div>
+        </dl>
+
+      <details class="unit">
+        <summary class="unit__summary">
+          <h3 class="unit__name">Apply Engineering Mathematics</h3>
+          <span class="unit__hint">CATs · Exams</span>
+        </summary>
+        <div class="unit__body">
+        <section class="record" aria-labelledby="unit1-cats">
+          <h4 class="record__title" id="unit1-cats">CATs</h4>
+          <div class="table-wrap">
+            <table class="marks">
+              <caption class="sr-only">CATs marks record: Apply Engineering Mathematics</caption>
+              <thead>
+                <tr><th scope="col">Assessment</th><th scope="col">Marks obtained</th><th scope="col">Total marks</th></tr>
+              </thead>
+              <tbody>
+            <tr>
+              <td><input type="text" aria-label="Apply Engineering Mathematics CATs 1: assessment name or number" placeholder="CATs 1"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Engineering Mathematics CATs 1: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Engineering Mathematics CATs 1: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Apply Engineering Mathematics CATs 2: assessment name or number" placeholder="CATs 2"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Engineering Mathematics CATs 2: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Engineering Mathematics CATs 2: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Apply Engineering Mathematics CATs 3: assessment name or number" placeholder="CATs 3"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Engineering Mathematics CATs 3: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Engineering Mathematics CATs 3: total marks"></td>
+            </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="add-btn" data-add-row>Add row</button>
+        </section>
+        <section class="record" aria-labelledby="unit1-exams">
+          <h4 class="record__title" id="unit1-exams">Exams</h4>
+          <div class="table-wrap">
+            <table class="marks">
+              <caption class="sr-only">Exams marks record: Apply Engineering Mathematics</caption>
+              <thead>
+                <tr><th scope="col">Assessment</th><th scope="col">Marks obtained</th><th scope="col">Total marks</th></tr>
+              </thead>
+              <tbody>
+            <tr>
+              <td><input type="text" aria-label="Apply Engineering Mathematics Exams 1: assessment name or number" placeholder="Exams 1"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Engineering Mathematics Exams 1: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Engineering Mathematics Exams 1: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Apply Engineering Mathematics Exams 2: assessment name or number" placeholder="Exams 2"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Engineering Mathematics Exams 2: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Engineering Mathematics Exams 2: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Apply Engineering Mathematics Exams 3: assessment name or number" placeholder="Exams 3"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Engineering Mathematics Exams 3: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Engineering Mathematics Exams 3: total marks"></td>
+            </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="add-btn" data-add-row>Add row</button>
+        </section>
+        </div>
+      </details>
+      <details class="unit">
+        <summary class="unit__summary">
+          <h3 class="unit__name">Apply Thermodynamics &amp; Fluid Mechanic Principles</h3>
+          <span class="unit__hint">CATs · Exams</span>
+        </summary>
+        <div class="unit__body">
+        <section class="record" aria-labelledby="unit2-cats">
+          <h4 class="record__title" id="unit2-cats">CATs</h4>
+          <div class="table-wrap">
+            <table class="marks">
+              <caption class="sr-only">CATs marks record: Apply Thermodynamics & Fluid Mechanic Principles</caption>
+              <thead>
+                <tr><th scope="col">Assessment</th><th scope="col">Marks obtained</th><th scope="col">Total marks</th></tr>
+              </thead>
+              <tbody>
+            <tr>
+              <td><input type="text" aria-label="Apply Thermodynamics & Fluid Mechanic Principles CATs 1: assessment name or number" placeholder="CATs 1"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Thermodynamics & Fluid Mechanic Principles CATs 1: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Thermodynamics & Fluid Mechanic Principles CATs 1: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Apply Thermodynamics & Fluid Mechanic Principles CATs 2: assessment name or number" placeholder="CATs 2"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Thermodynamics & Fluid Mechanic Principles CATs 2: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Thermodynamics & Fluid Mechanic Principles CATs 2: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Apply Thermodynamics & Fluid Mechanic Principles CATs 3: assessment name or number" placeholder="CATs 3"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Thermodynamics & Fluid Mechanic Principles CATs 3: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Thermodynamics & Fluid Mechanic Principles CATs 3: total marks"></td>
+            </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="add-btn" data-add-row>Add row</button>
+        </section>
+        <section class="record" aria-labelledby="unit2-exams">
+          <h4 class="record__title" id="unit2-exams">Exams</h4>
+          <div class="table-wrap">
+            <table class="marks">
+              <caption class="sr-only">Exams marks record: Apply Thermodynamics & Fluid Mechanic Principles</caption>
+              <thead>
+                <tr><th scope="col">Assessment</th><th scope="col">Marks obtained</th><th scope="col">Total marks</th></tr>
+              </thead>
+              <tbody>
+            <tr>
+              <td><input type="text" aria-label="Apply Thermodynamics & Fluid Mechanic Principles Exams 1: assessment name or number" placeholder="Exams 1"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Thermodynamics & Fluid Mechanic Principles Exams 1: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Thermodynamics & Fluid Mechanic Principles Exams 1: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Apply Thermodynamics & Fluid Mechanic Principles Exams 2: assessment name or number" placeholder="Exams 2"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Thermodynamics & Fluid Mechanic Principles Exams 2: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Thermodynamics & Fluid Mechanic Principles Exams 2: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Apply Thermodynamics & Fluid Mechanic Principles Exams 3: assessment name or number" placeholder="Exams 3"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Thermodynamics & Fluid Mechanic Principles Exams 3: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Apply Thermodynamics & Fluid Mechanic Principles Exams 3: total marks"></td>
+            </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="add-btn" data-add-row>Add row</button>
+        </section>
+        </div>
+      </details>
+      <details class="unit">
+        <summary class="unit__summary">
+          <h3 class="unit__name">Electromechanical Systems Design</h3>
+          <span class="unit__hint">CATs · Exams · Practicals</span>
+        </summary>
+        <div class="unit__body">
+        <section class="record" aria-labelledby="unit3-cats">
+          <h4 class="record__title" id="unit3-cats">CATs</h4>
+          <div class="table-wrap">
+            <table class="marks">
+              <caption class="sr-only">CATs marks record: Electromechanical Systems Design</caption>
+              <thead>
+                <tr><th scope="col">Assessment</th><th scope="col">Marks obtained</th><th scope="col">Total marks</th></tr>
+              </thead>
+              <tbody>
+            <tr>
+              <td><input type="text" aria-label="Electromechanical Systems Design CATs 1: assessment name or number" placeholder="CATs 1"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical Systems Design CATs 1: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical Systems Design CATs 1: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Electromechanical Systems Design CATs 2: assessment name or number" placeholder="CATs 2"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical Systems Design CATs 2: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical Systems Design CATs 2: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Electromechanical Systems Design CATs 3: assessment name or number" placeholder="CATs 3"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical Systems Design CATs 3: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical Systems Design CATs 3: total marks"></td>
+            </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="add-btn" data-add-row>Add row</button>
+        </section>
+        <section class="record" aria-labelledby="unit3-exams">
+          <h4 class="record__title" id="unit3-exams">Exams</h4>
+          <div class="table-wrap">
+            <table class="marks">
+              <caption class="sr-only">Exams marks record: Electromechanical Systems Design</caption>
+              <thead>
+                <tr><th scope="col">Assessment</th><th scope="col">Marks obtained</th><th scope="col">Total marks</th></tr>
+              </thead>
+              <tbody>
+            <tr>
+              <td><input type="text" aria-label="Electromechanical Systems Design Exams 1: assessment name or number" placeholder="Exams 1"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical Systems Design Exams 1: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical Systems Design Exams 1: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Electromechanical Systems Design Exams 2: assessment name or number" placeholder="Exams 2"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical Systems Design Exams 2: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical Systems Design Exams 2: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Electromechanical Systems Design Exams 3: assessment name or number" placeholder="Exams 3"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical Systems Design Exams 3: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical Systems Design Exams 3: total marks"></td>
+            </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="add-btn" data-add-row>Add row</button>
+        </section>
+        <section class="practicals" aria-labelledby="unit3-practicals">
+          <h4 class="record__title" id="unit3-practicals">Practicals</h4>
+          <div class="cw-projects" data-project-block>
+            <h5 class="cw-projects__title">Projects</h5>
+            <p class="cw-projects__empty" data-empty>No projects yet.</p>
+            <ul class="cw-project-list" data-project-list></ul>
+            <button type="button" class="add-btn" data-add-project>Add project</button>
+            <template>
+              <li class="cw-project">
+                <div class="cw-project__top">
+                  <span class="cw-project__label">Project</span>
+                  <button type="button" class="remove-btn" data-remove>Remove</button>
+                </div>
+                <label class="field">Project title
+                  <input type="text" placeholder="Project title">
+                </label>
+                <label class="field">Short description
+                  <textarea rows="3" placeholder="One or two sentences"></textarea>
+                </label>
+                <div class="evidence">
+                  <p class="evidence__title">Evidence</p>
+                  <!-- Replace this placeholder with <img> or <video> elements when adding real media -->
+                  <div class="evidence__slot">Add evidence: images and videos go here</div>
+                </div>
+              </li>
+            </template>
+          </div>
+        </section>
+        </div>
+      </details>
+      <details class="unit">
+        <summary class="unit__summary">
+          <h3 class="unit__name">Communication Skills</h3>
+          <span class="unit__hint">CATs · Exams</span>
+        </summary>
+        <div class="unit__body">
+        <section class="record" aria-labelledby="unit4-cats">
+          <h4 class="record__title" id="unit4-cats">CATs</h4>
+          <div class="table-wrap">
+            <table class="marks">
+              <caption class="sr-only">CATs marks record: Communication Skills</caption>
+              <thead>
+                <tr><th scope="col">Assessment</th><th scope="col">Marks obtained</th><th scope="col">Total marks</th></tr>
+              </thead>
+              <tbody>
+            <tr>
+              <td><input type="text" aria-label="Communication Skills CATs 1: assessment name or number" placeholder="CATs 1"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Communication Skills CATs 1: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Communication Skills CATs 1: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Communication Skills CATs 2: assessment name or number" placeholder="CATs 2"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Communication Skills CATs 2: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Communication Skills CATs 2: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Communication Skills CATs 3: assessment name or number" placeholder="CATs 3"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Communication Skills CATs 3: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Communication Skills CATs 3: total marks"></td>
+            </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="add-btn" data-add-row>Add row</button>
+        </section>
+        <section class="record" aria-labelledby="unit4-exams">
+          <h4 class="record__title" id="unit4-exams">Exams</h4>
+          <div class="table-wrap">
+            <table class="marks">
+              <caption class="sr-only">Exams marks record: Communication Skills</caption>
+              <thead>
+                <tr><th scope="col">Assessment</th><th scope="col">Marks obtained</th><th scope="col">Total marks</th></tr>
+              </thead>
+              <tbody>
+            <tr>
+              <td><input type="text" aria-label="Communication Skills Exams 1: assessment name or number" placeholder="Exams 1"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Communication Skills Exams 1: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Communication Skills Exams 1: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Communication Skills Exams 2: assessment name or number" placeholder="Exams 2"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Communication Skills Exams 2: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Communication Skills Exams 2: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Communication Skills Exams 3: assessment name or number" placeholder="Exams 3"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Communication Skills Exams 3: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Communication Skills Exams 3: total marks"></td>
+            </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="add-btn" data-add-row>Add row</button>
+        </section>
+        </div>
+      </details>
+      <details class="unit">
+        <summary class="unit__summary">
+          <h3 class="unit__name">Electromechanical System Installation &amp; Maintenance</h3>
+          <span class="unit__hint">CATs · Exams · Practicals</span>
+        </summary>
+        <div class="unit__body">
+        <section class="record" aria-labelledby="unit5-cats">
+          <h4 class="record__title" id="unit5-cats">CATs</h4>
+          <div class="table-wrap">
+            <table class="marks">
+              <caption class="sr-only">CATs marks record: Electromechanical System Installation & Maintenance</caption>
+              <thead>
+                <tr><th scope="col">Assessment</th><th scope="col">Marks obtained</th><th scope="col">Total marks</th></tr>
+              </thead>
+              <tbody>
+            <tr>
+              <td><input type="text" aria-label="Electromechanical System Installation & Maintenance CATs 1: assessment name or number" placeholder="CATs 1"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical System Installation & Maintenance CATs 1: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical System Installation & Maintenance CATs 1: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Electromechanical System Installation & Maintenance CATs 2: assessment name or number" placeholder="CATs 2"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical System Installation & Maintenance CATs 2: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical System Installation & Maintenance CATs 2: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Electromechanical System Installation & Maintenance CATs 3: assessment name or number" placeholder="CATs 3"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical System Installation & Maintenance CATs 3: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical System Installation & Maintenance CATs 3: total marks"></td>
+            </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="add-btn" data-add-row>Add row</button>
+        </section>
+        <section class="record" aria-labelledby="unit5-exams">
+          <h4 class="record__title" id="unit5-exams">Exams</h4>
+          <div class="table-wrap">
+            <table class="marks">
+              <caption class="sr-only">Exams marks record: Electromechanical System Installation & Maintenance</caption>
+              <thead>
+                <tr><th scope="col">Assessment</th><th scope="col">Marks obtained</th><th scope="col">Total marks</th></tr>
+              </thead>
+              <tbody>
+            <tr>
+              <td><input type="text" aria-label="Electromechanical System Installation & Maintenance Exams 1: assessment name or number" placeholder="Exams 1"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical System Installation & Maintenance Exams 1: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical System Installation & Maintenance Exams 1: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Electromechanical System Installation & Maintenance Exams 2: assessment name or number" placeholder="Exams 2"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical System Installation & Maintenance Exams 2: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical System Installation & Maintenance Exams 2: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Electromechanical System Installation & Maintenance Exams 3: assessment name or number" placeholder="Exams 3"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical System Installation & Maintenance Exams 3: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Electromechanical System Installation & Maintenance Exams 3: total marks"></td>
+            </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="add-btn" data-add-row>Add row</button>
+        </section>
+        <section class="practicals" aria-labelledby="unit5-practicals">
+          <h4 class="record__title" id="unit5-practicals">Practicals</h4>
+          <div class="cw-projects" data-project-block>
+            <h5 class="cw-projects__title">Projects</h5>
+            <p class="cw-projects__empty" data-empty>No projects yet.</p>
+            <ul class="cw-project-list" data-project-list></ul>
+            <button type="button" class="add-btn" data-add-project>Add project</button>
+            <template>
+              <li class="cw-project">
+                <div class="cw-project__top">
+                  <span class="cw-project__label">Project</span>
+                  <button type="button" class="remove-btn" data-remove>Remove</button>
+                </div>
+                <label class="field">Project title
+                  <input type="text" placeholder="Project title">
+                </label>
+                <label class="field">Short description
+                  <textarea rows="3" placeholder="One or two sentences"></textarea>
+                </label>
+                <div class="evidence">
+                  <p class="evidence__title">Evidence</p>
+                  <!-- Replace this placeholder with <img> or <video> elements when adding real media -->
+                  <div class="evidence__slot">Add evidence: images and videos go here</div>
+                </div>
+              </li>
+            </template>
+          </div>
+        </section>
+        </div>
+      </details>
+      <details class="unit">
+        <summary class="unit__summary">
+          <h3 class="unit__name">Computer Aided Design</h3>
+          <span class="unit__hint">CATs · Exams · Practicals</span>
+        </summary>
+        <div class="unit__body">
+        <section class="record" aria-labelledby="unit6-cats">
+          <h4 class="record__title" id="unit6-cats">CATs</h4>
+          <div class="table-wrap">
+            <table class="marks">
+              <caption class="sr-only">CATs marks record: Computer Aided Design</caption>
+              <thead>
+                <tr><th scope="col">Assessment</th><th scope="col">Marks obtained</th><th scope="col">Total marks</th></tr>
+              </thead>
+              <tbody>
+            <tr>
+              <td><input type="text" aria-label="Computer Aided Design CATs 1: assessment name or number" placeholder="CATs 1"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Computer Aided Design CATs 1: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Computer Aided Design CATs 1: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Computer Aided Design CATs 2: assessment name or number" placeholder="CATs 2"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Computer Aided Design CATs 2: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Computer Aided Design CATs 2: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Computer Aided Design CATs 3: assessment name or number" placeholder="CATs 3"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Computer Aided Design CATs 3: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Computer Aided Design CATs 3: total marks"></td>
+            </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="add-btn" data-add-row>Add row</button>
+        </section>
+        <section class="record" aria-labelledby="unit6-exams">
+          <h4 class="record__title" id="unit6-exams">Exams</h4>
+          <div class="table-wrap">
+            <table class="marks">
+              <caption class="sr-only">Exams marks record: Computer Aided Design</caption>
+              <thead>
+                <tr><th scope="col">Assessment</th><th scope="col">Marks obtained</th><th scope="col">Total marks</th></tr>
+              </thead>
+              <tbody>
+            <tr>
+              <td><input type="text" aria-label="Computer Aided Design Exams 1: assessment name or number" placeholder="Exams 1"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Computer Aided Design Exams 1: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Computer Aided Design Exams 1: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Computer Aided Design Exams 2: assessment name or number" placeholder="Exams 2"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Computer Aided Design Exams 2: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Computer Aided Design Exams 2: total marks"></td>
+            </tr>
+            <tr>
+              <td><input type="text" aria-label="Computer Aided Design Exams 3: assessment name or number" placeholder="Exams 3"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Computer Aided Design Exams 3: marks obtained"></td>
+              <td><input type="number" min="0" inputmode="decimal" aria-label="Computer Aided Design Exams 3: total marks"></td>
+            </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="add-btn" data-add-row>Add row</button>
+        </section>
+        <section class="practicals" aria-labelledby="unit6-practicals">
+          <h4 class="record__title" id="unit6-practicals">Practicals</h4>
+          <div class="cw-projects" data-project-block>
+            <h5 class="cw-projects__title">Projects</h5>
+            <p class="cw-projects__empty" data-empty>No projects yet.</p>
+            <ul class="cw-project-list" data-project-list></ul>
+            <button type="button" class="add-btn" data-add-project>Add project</button>
+            <template>
+              <li class="cw-project">
+                <div class="cw-project__top">
+                  <span class="cw-project__label">Project</span>
+                  <button type="button" class="remove-btn" data-remove>Remove</button>
+                </div>
+                <label class="field">Project title
+                  <input type="text" placeholder="Project title">
+                </label>
+                <label class="field">Short description
+                  <textarea rows="3" placeholder="One or two sentences"></textarea>
+                </label>
+                <div class="evidence">
+                  <p class="evidence__title">Evidence</p>
+                  <!-- Replace this placeholder with <img> or <video> elements when adding real media -->
+                  <div class="evidence__slot">Add evidence: images and videos go here</div>
+                </div>
+              </li>
+            </template>
+          </div>
+        </section>
+        </div>
+      </details>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="contact" id="contact" aria-labelledby="contactHeading">
+      <div class="container contact__inner">
+        <div class="contact__text">
+          <p class="section-label" data-reveal="label">Contact</p>
+          <h2 class="section-heading" id="contactHeading" data-reveal="mask">
+            <span class="line"><span>Let's build</span></span>
+            <span class="line"><span>something.</span></span>
+          </h2>
+          <p class="contact__body">
+            Open to collaborations, internships and conversations about engineering.
+            Drop me a message — I read every one.
+          </p>
+          <!-- Edit the mailto address -->
+          <a href="mailto:medleydim043326@kiambupoly.ac.ke" class="btn btn--primary contact__email">medleydim043326@kiambupoly.ac.ke</a>
+          <div class="contact__links">
+            <!-- Edit this URL -->
+            <a href="https://github.com/Talksick-ley" target="_blank" rel="noopener noreferrer" class="contact__social contact__social--icon" aria-label="GitHub profile (opens in a new tab)">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="contact__deco" aria-hidden="true">
+          <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="100" cy="100" r="80" stroke="currentColor" stroke-width="1" stroke-dasharray="4 8"/>
+            <circle cx="100" cy="100" r="55" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+            <circle cx="100" cy="100" r="6" class="deco-dot"/>
+            <path d="M100 20v25M180 100h-25M100 180v-25M20 100h25" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <span>© 2026 Medley Mbugua</span>
+      <span class="footer__right">Built with precision.</span>
+    </div>
+  </footer>
+
+  <script src="main.js" defer></script>
+  <script src="weld.js" defer></script>
+  <script src="diagram.js" defer></script>
+  <script src="coursework.js" defer></script>
+</body>
+</html>
