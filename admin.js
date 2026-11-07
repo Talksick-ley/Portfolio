@@ -1,3 +1,9 @@
+/* ============================================================
+   ADMIN.JS: owner-only editor for /admin
+   The browser only ever holds the publishable key. Every change
+   is checked by Supabase Row Level Security, so this script can
+   be read by anyone without giving them edit access.
+   ============================================================ */
 (function () {
   'use strict';
 
@@ -26,7 +32,7 @@
 
   let units = [];
 
-  // ── Small DOM helper ──
+  // ── Small DOM helpers (no innerHTML, so nothing is parsed as markup) ──
   function h(tag, props, ...children) {
     const node = document.createElement(tag);
     for (const key in props || {}) {
@@ -51,6 +57,7 @@
   }
 
   function fail(error, fallback) {
+    // Shown to the owner only; never includes keys or internal details beyond the message
     return (fallback || 'Something went wrong.') + (error && error.message ? ' (' + error.message + ')' : '');
   }
 
@@ -69,7 +76,7 @@
     const { data: { session } } = await client.auth.getSession();
     if (!session) return showLogin();
 
-    // Owner check. 
+    // Owner check. This only decides what to show; RLS enforces the real rules.
     const { data: owner, error } = await client
       .from('owners')
       .select('user_id')
@@ -120,21 +127,31 @@
     if (error) return say($('accessMessage'), fail(error, 'Could not load units.'), true);
     units = data || [];
 
-    const marksSel = $('marksUnit');
     const projSel = $('projectUnit');
-    const keepMarks = marksSel.value;
     const keepProj = projSel.value;
 
-    marksSel.replaceChildren(...units.map((u) => h('option', { value: u.id, text: u.name })));
+    fillMarksUnits();
     projSel.replaceChildren(...units.filter((u) => u.has_practicals)
       .map((u) => h('option', { value: u.id, text: u.name })));
 
-    if (keepMarks) marksSel.value = keepMarks;
     if (keepProj) projSel.value = keepProj;
   }
 
+  // Practical marks can only belong to units that have practicals.
+  // Shows the evidence placeholder only for the Practical type.
+  function fillMarksUnits() {
+    const marksSel = $('marksUnit');
+    const kind = $('marksKind').value;
+    const keep = marksSel.value;
+    const list = kind === 'Practical' ? units.filter((u) => u.has_practicals) : units;
+
+    marksSel.replaceChildren(...list.map((u) => h('option', { value: u.id, text: u.name })));
+    if (list.some((u) => String(u.id) === keep)) marksSel.value = keep;
+    $('practicalEvidence').hidden = kind !== 'Practical';
+  }
+
   $('marksUnit').addEventListener('change', loadMarks);
-  $('marksKind').addEventListener('change', loadMarks);
+  $('marksKind').addEventListener('change', () => { fillMarksUnits(); loadMarks(); });
   $('projectUnit').addEventListener('change', loadProjects);
 
   // ── Marks ────────────────────────────────────────────────
@@ -204,6 +221,10 @@
     e.preventDefault();
     const err = validateMark($('markName').value, $('markObtained').value, $('markTotal').value);
     if (err) return say($('marksMessage'), err, true);
+    const chosen = units.find((u) => String(u.id) === $('marksUnit').value);
+    if ($('marksKind').value === 'Practical' && !(chosen && chosen.has_practicals)) {
+      return say($('marksMessage'), 'Practical marks can only be added to a unit that has practicals.', true);
+    }
 
     const { error } = await client.from('marks').insert({
       unit_id: Number($('marksUnit').value),

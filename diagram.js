@@ -1,4 +1,13 @@
+/* ============================================================
+   DIAGRAM.JS: skill architecture as a bus schematic
+   Mechatronics is the backbone; each discipline taps into it.
+   Dashed links show the closest interfaces between disciplines.
 
+   To edit: change NODES (text), LINKS (interfaces) or LAYOUTS (positions).
+   - 'wide' is used above 640px, 'tall' (portrait) on phones.
+   - Selecting a node: click / tap / Enter / Space. Hover and focus preview.
+   - Drawing is scrubbed by scroll position through the --p CSS variable.
+   ============================================================ */
 (function () {
   'use strict';
 

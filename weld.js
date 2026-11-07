@@ -1,4 +1,14 @@
+/* ============================================================
+   WELD.JS: hero welding scene
+   One SVG, no libraries. Each frame moves the torch tip along the
+   seam, solves a two-bone arm (inverse kinematics) so the welder
+   follows it, grows the bead and emits sparks.
 
+   - Runs only while visible and the tab is active.
+   - Pause button (WCAG 2.2.2). Starts paused if the visitor asked
+     for reduced motion.
+   - Flicker is smoothed and low-amplitude: no rapid flashing.
+   ============================================================ */
 (function () {
   'use strict';
 
@@ -7,14 +17,15 @@
   const $ = (id) => svg.querySelector('#' + id);
   const NS = 'http://www.w3.org/2000/svg';
 
-  
-  const SEAM_Y = 264;                 
-  const X_START = 330, X_END = 430;   
-  const HAND_OFFSET = [-40, -34];     
-  const SHOULDER = [222, 184];        
-  const LEAN = [30, 2];               
-  const ARM = 78;                     
-  const CABLE_END = [92, 447];       
+  // ── Scene settings (SVG units): tweak these to retune the scene ──
+  const SEAM_Y = 264;                 // y of the seam on the plate
+  const X_START = 330, X_END = 430;   // tip travel along the seam
+  const HAND_OFFSET = [-40, -34];     // hand position relative to the tip
+  const SHOULDER = [222, 184];        // shoulder at the start of a pass
+  const LEAN = [30, 2];               // how far the body leans by the end
+  const ARM = 78;                     // length of upper arm and forearm
+  const CABLE_END = [92, 447];        // where the torch cable meets the floor
+
   // Timeline of one pass, in seconds
   const T_STRIKE = 0.5, T_WELD = 5.6, T_COOL = 0.8, T_RETURN = 1.0;
   const CYCLE = T_STRIKE + T_WELD + T_COOL + T_RETURN;
@@ -57,10 +68,10 @@
       if (s.life <= 0) continue;
       s.life -= dt;
       if (s.life <= 0) { s.line.setAttribute('opacity', '0'); continue; }
-      s.vy += 520 * dt;                                  
+      s.vy += 520 * dt;                                  // gravity
       s.x += s.vx * dt;
       s.y += s.vy * dt;
-      if (!s.bounced && s.vy > 0 && s.y > SEAM_Y && s.x > 284 && s.x < 496) {   
+      if (!s.bounced && s.vy > 0 && s.y > SEAM_Y && s.x > 284 && s.x < 496) {   // skip off the plate once
         s.y = SEAM_Y; s.vy *= -0.35; s.vx *= 0.7; s.bounced = true;
       }
       const k = s.life / s.max;
@@ -77,11 +88,11 @@
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const ease = (t) => t * t * (3 - 2 * t);
 
-  
+  // Two-bone IK. Returns the elbow, choosing the solution that hangs lower.
   function elbow(sx, sy, tx, ty) {
     let dx = tx - sx, dy = ty - sy;
     const d = clamp(Math.hypot(dx, dy), 1, ARM * 2 - 0.5);
-    const a = d / 2;                                    
+    const a = d / 2;                                    // equal bone lengths
     const h = Math.sqrt(Math.max(ARM * ARM - a * a, 0));
     const ux = dx / Math.hypot(dx, dy), uy = dy / Math.hypot(dx, dy);
     const bx = sx + ux * a, by = sy + uy * a;
@@ -141,7 +152,7 @@
     return [tipX, tipY];
   }
 
-  // ── Timeline ──────────────
+  // ── Timeline: where is the torch at time t? ──────────────
   function frame(t, now) {
     const c = t % CYCLE;
     let p, arc = 0, beadAlpha = 1, coolAmt = 0;
@@ -172,7 +183,7 @@
     clock += dt;
     const f = frame(clock, now);
     if (f.arc) {
-      spawnDebt += dt * 60;                              
+      spawnDebt += dt * 60;                              // about 60 sparks a second
       while (spawnDebt >= 1) { spawn(f.tip[0], f.tip[1]); spawnDebt -= 1; }
     }
     stepSparks(dt);
@@ -185,7 +196,7 @@
 
   function stop() { if (raf) cancelAnimationFrame(raf); raf = 0; last = 0; }
 
-  // A still frame
+  // A still frame: mid-pass, arc lit, a few frozen sparks
   function drawStill() {
     const now = 1000;
     const f = frame(T_STRIKE + T_WELD * 0.62, now);

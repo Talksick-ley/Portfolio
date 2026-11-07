@@ -1,3 +1,12 @@
+/* ============================================================
+   COURSEWORK.JS: workbench drawers + public, read-only data
+   1. Drawers: one unit open at a time. Works without Supabase.
+   2. Data: loads PUBLISHED marks and projects from Supabase,
+      the same queries and filters as before. Visitors cannot edit.
+   3. Evidence: selecting a project opens a focused viewer for its
+      published images and videos.
+   Editing happens on /admin only.
+   ============================================================ */
 (function () {
   'use strict';
 
@@ -98,7 +107,7 @@
   async function loadMarks() {
     const { data, error } = await client
       .from('marks')
-      .select('kind, assessment_name, marks_obtained, total_marks, sort, created_at, units!inner(slug)')
+      .select('kind, assessment_name, marks_obtained, total_marks, sort, created_at, is_published, units!inner(slug)')
       .eq('is_published', true)
       .order('sort', { ascending: true })
       .order('created_at', { ascending: true });
@@ -109,7 +118,7 @@
 
       const slug = unitSlugOf(tbody);
       const kind = tbody.dataset.marks;
-      const rows = (data || []).filter((r) => r.units && r.units.slug === slug && r.kind === kind);
+      const rows = (data || []).filter((r) => r.is_published === true && r.units && r.units.slug === slug && r.kind === kind);
       if (!rows.length) { tbody.append(emptyRow('Not yet published.')); return; }
 
       rows.forEach((r) => {

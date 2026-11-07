@@ -1,4 +1,15 @@
-
+-- =============================================================
+-- PORTFOLIO: Supabase database setup
+-- Run this whole file once in: Supabase Dashboard → SQL Editor → New query
+--
+-- Security model
+--   * Anyone (anonymous visitors included) may READ rows marked is_published = true.
+--   * Only the owner (an auth user whose id is listed in public.owners) may
+--     read unpublished rows, insert, update, or delete anything, and upload
+--     or delete media files.
+--   * The publishable (anon) key in the website is safe to publish: these
+--     policies, not the key, are what protect the data.
+-- =============================================================
 
 -- ── 1. Owner table ────────────────────────────────────────────
 create table if not exists public.owners (
@@ -7,12 +18,16 @@ create table if not exists public.owners (
 
 alter table public.owners enable row level security;
 
+-- An owner may check their own row (the admin page uses this to confirm access).
+-- No one else can read, insert, update or delete rows here through the API.
 drop policy if exists "owner reads own row" on public.owners;
 create policy "owner reads own row"
   on public.owners for select
   to authenticated
   using (user_id = auth.uid());
 
+-- Helper: true only when the current caller is in public.owners.
+-- SECURITY DEFINER lets the check read owners even though normal users cannot.
 create or replace function public.is_owner()
 returns boolean
 language sql
@@ -39,7 +54,7 @@ create table if not exists public.units (
 create table if not exists public.marks (
   id uuid primary key default gen_random_uuid(),
   unit_id integer not null references public.units (id) on delete cascade,
-  kind text not null check (kind in ('CAT', 'Exam')),
+  kind text not null check (kind in ('CAT', 'Exam', 'Practical')),
   assessment_name text not null check (char_length(assessment_name) between 1 and 120),
   marks_obtained numeric not null check (marks_obtained >= 0),
   total_marks numeric not null check (total_marks > 0),
@@ -70,7 +85,7 @@ create table if not exists public.project_media (
   created_at timestamptz not null default now()
 );
 
-
+-- Seed the six units with the exact names used on the website.
 insert into public.units (slug, name, has_practicals, sort) values
   ('apply-engineering-mathematics', 'Apply Engineering Mathematics', false, 1),
   ('apply-thermodynamics-fluid-mechanic-principles', 'Apply Thermodynamics & Fluid Mechanic Principles', false, 2),
@@ -163,6 +178,12 @@ drop policy if exists "owner delete media" on public.project_media;
 create policy "owner delete media" on public.project_media for delete
   to authenticated using (public.is_owner());
 
+-- ── 4. Storage: bucket "portfolio-media" ──────────────────────
+-- Create the bucket first in the Dashboard (Storage → New bucket):
+--   Name: portfolio-media    Public bucket: ON
+-- The public bucket lets the website show published files by URL.
+-- Upload, update and delete are still limited to the owner by the policies below.
+-- Listing files through the API is not allowed for the public (no SELECT policy).
 
 drop policy if exists "owner upload portfolio media" on storage.objects;
 create policy "owner upload portfolio media" on storage.objects for insert
@@ -180,3 +201,7 @@ create policy "owner delete portfolio media" on storage.objects for delete
   to authenticated
   using (bucket_id = 'portfolio-media' and public.is_owner());
 
+-- ── 5. After creating your user, make yourself the owner ──────
+-- Replace the UUID with your user id (Dashboard → Authentication → Users).
+-- Run this line separately after you create the account:
+--   insert into public.owners (user_id) values ('PASTE-YOUR-USER-UUID-HERE');

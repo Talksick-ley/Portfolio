@@ -61,6 +61,7 @@
             <select id="marksKind">
               <option value="CAT">CAT</option>
               <option value="Exam">Exam</option>
+              <option value="Practical">Practical</option>
             </select>
           </label>
         </div>
@@ -84,6 +85,20 @@
           <button type="submit" class="admin-btn admin-btn--primary">Add record</button>
           <p class="admin-msg" id="marksMessage" role="status" hidden></p>
         </form>
+
+        <!-- PRACTICAL EVIDENCE PLACEHOLDER: shown only when "Practical" is selected.
+             Not connected yet. See the note inside the box. -->
+        <div class="admin-upload admin-evidence" id="practicalEvidence" hidden>
+          <h3 class="admin-subtitle">Evidence for practicals</h3>
+          <p class="admin-empty">Pictures, videos and PDFs for each practical will be uploaded here.
+            Upload is not active yet: storing PDFs and linking evidence to a practical mark needs one more
+            database change, which has not been applied. Practical marks can be saved now.</p>
+          <label class="admin-field">Evidence file (pictures, videos or PDF)
+            <input type="file" accept="image/*,video/*,application/pdf" disabled aria-describedby="practicalEvidenceNote" />
+          </label>
+          <p class="admin-msg" id="practicalEvidenceNote">Upload coming soon.</p>
+          <button type="button" class="admin-btn" disabled>Add evidence</button>
+        </div>
       </section>
 
       <!-- PROJECTS -->

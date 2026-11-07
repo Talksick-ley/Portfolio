@@ -1,3 +1,12 @@
+/* ============================================================
+   PORTFOLIO: STYLE.CSS
+   Palette: drafting-vellum cream, ink, one signal red.
+   The hot orange is reserved for the weld arc and sparks.
+   Font:    Archivo (variable: weight + width), see index.html
+   Layout:  mobile-first sizing, checked at 375 / 768 / 1440px
+   ============================================================ */
+
+/* ── DESIGN TOKENS ─────────────────────────────────────────── */
 :root {
   --cream:      #F1E8D4;   /* page background  */
   --cream-2:    #E8DDC4;   /* alternate bands  */
@@ -163,7 +172,8 @@ body {
   display: flex;
   align-items: center;
 }
-
+/* The blurred bar lives on a pseudo-element: a backdrop-filter on the
+   header itself would trap the fixed mobile drawer inside the header. */
 .nav::before {
   content: '';
   position: absolute;
@@ -429,15 +439,15 @@ body {
   overflow: hidden;
 }
 .diagram__svg {
-  --p: 1;                 
+  --p: 1;                 /* scroll progress 0 → 1, set by js/diagram.js */
   width: 100%;
   height: auto;
-  touch-action: pan-y;    
+  touch-action: pan-y;    /* never trap touch scrolling */
   user-select: none;
   -webkit-user-select: none;
 }
 
-
+/* Scroll-scrubbed drawing: each element declares --s (start) and --d (duration) */
 .d-draw {
   stroke-dasharray: 1;
   stroke-dashoffset: calc(1 - clamp(0, (var(--p) - var(--s, 0)) / var(--d, 0.2), 1));
@@ -481,7 +491,7 @@ body {
 
 @keyframes pulseFlow { to { stroke-dashoffset: -14.1; } }
 
-
+/* Readout: what the selected node means */
 .readout {
   display: grid;
   gap: 0.35rem 2rem;
@@ -610,7 +620,7 @@ body {
   color: var(--muted);
 }
 
-/* ── MOTION:  ───────────────────────── */
+/* ── MOTION: only when JS is running ───────────────────────── */
 /* Hero entrance: one orchestrated sequence */
 .js .hero__name .line > span { transform: translateY(108%); animation: rise 1s var(--ease) forwards; }
 .js .hero__name .line:nth-child(2) > span { animation-delay: 0.12s; }
@@ -624,7 +634,7 @@ body {
 @keyframes rise { to { transform: none; } }
 @keyframes fade { to { opacity: 1; } }
 
-/* Scroll reveals  */
+/* Scroll reveals (toggled by js/main.js adding .in) */
 .js [data-reveal="mask"] .line > span { transform: translateY(108%); transition: transform 0.9s var(--ease); }
 .js [data-reveal="mask"] .line:nth-child(2) > span { transition-delay: 0.1s; }
 .js [data-reveal="mask"].in .line > span { transform: none; }
@@ -645,7 +655,8 @@ body {
 }
 .js [data-reveal="rule"].in::after { transform: scaleX(1); }
 
-/* "Cut": a cream shutter wipes away to reveal the card. */
+/* "Cut": a cream shutter wipes away to reveal the card.
+   (An overlay, not clip-path: IntersectionObserver ignores fully clipped targets.) */
 .js [data-reveal="cut"] { position: relative; }
 .js [data-reveal="cut"]::after {
   content: '';
@@ -692,7 +703,7 @@ body {
     border-left: 1px solid var(--rule);
     box-shadow: -24px 0 60px rgba(28, 26, 22, 0.16);
     transform: translateX(105%);
-    visibility: hidden;                      
+    visibility: hidden;                      /* closed menu is not focusable */
     transition: transform 0.45s var(--ease), visibility 0s linear 0.45s;
   }
   .nav__links.open { transform: none; visibility: visible; transition: transform 0.45s var(--ease); }
@@ -721,7 +732,7 @@ body {
   .d-pulse.is-active { animation: none; opacity: 0; }
 }
 
-/* ── PRINT: ─────── */
+/* ── PRINT: show finished artwork, no animation states ─────── */
 @media print {
   .diagram__svg { --p: 1 !important; }
   .progress, .nav, .scene__pause { display: none; }
@@ -827,7 +838,7 @@ body {
   min-width: 0;
   padding: 0.5rem 0.6rem;
   font: inherit;
-  font-size: 1rem;         
+  font-size: 1rem;          /* 16px stops iOS zooming on focus */
   color: var(--ink);
   background: var(--paper);
   border: 1.5px solid var(--rule);
@@ -1188,7 +1199,7 @@ body.admin { min-height: 100vh; }
 }
 .drawer.is-open .drawer__state { background: var(--ink); color: var(--cream); }
 
-/* The glide: */
+/* The glide: rows animate from 0fr to 1fr. Closed panels are inert and invisible. */
 .drawer__panel {
   display: grid;
   grid-template-rows: 0fr;
@@ -1231,7 +1242,7 @@ body.admin { min-height: 100vh; }
 .drawer__inner > .record:first-of-type { margin-top: 0.25rem; }
 .drawer__inner > :last-child { margin-bottom: 1.25rem; }
 
-/* Project entries  */
+/* Project entries are ledger rows, not media walls */
 .project-entry-item { list-style: none; }
 .project-entry {
   display: flex;
@@ -1254,7 +1265,7 @@ body.admin { min-height: 100vh; }
 .project-entry__meta { font-size: var(--fs-xs); color: var(--muted); font-weight: 600; }
 .project-entry:hover .project-entry__meta { color: var(--red); }
 
-/* Evidence viewer  */
+/* Evidence viewer (native dialog: focus trap, Escape to close) */
 .viewer {
   width: min(960px, calc(100vw - 2rem));
   max-height: calc(100vh - 2rem);
