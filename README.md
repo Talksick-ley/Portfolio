@@ -42,6 +42,18 @@ Open `index.html` in any modern browser. No server is needed.
 
 The site will be published at `https://talksick-ley.github.io/<repository-name>/`.
 
+## Owner editing (Supabase)
+
+Visitors see published marks and projects. Only the owner can edit, at `/admin`.
+
+1. Create a Supabase project. Run `supabase-setup.sql` once in the SQL Editor.
+2. Create a Storage bucket named `portfolio-media` with **Public** turned on.
+3. In **Authentication → Sign In / Providers**, turn off new user sign-ups.
+4. Create your owner user under **Authentication → Users**, then run `insert into public.owners (user_id) values ('<your-user-id>');`.
+5. Copy your project URL and publishable key into `config.js`. Never add a `service_role` key or a database password to this repository.
+
+Anyone can read the public files, so do not put secrets in them. Row Level Security (set up in `supabase-setup.sql`) is what stops visitors from editing.
+
 ## License
 
 Released under the MIT License. See [LICENSE](LICENSE).

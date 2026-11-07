@@ -1,8 +1,3 @@
-/* ============================================================
-   PORTFOLIO: MAIN.JS  (vanilla JS, no libraries)
-   Nav · scroll progress · reveals · scroll-spy · project tabs
-   The welder lives in weld.js, the skill diagram in diagram.js.
-   ============================================================ */
 (function () {
   'use strict';
 
@@ -30,7 +25,6 @@
     document.addEventListener('click', (e) => {
       if (links.classList.contains('open') && !e.target.closest('#navLinks, #navToggle')) setOpen(false);
     });
-    // Leaving the mobile layout while the drawer is open must not leave it stuck
     window.matchMedia('(min-width: 701px)').addEventListener('change', (e) => { if (e.matches) setOpen(false); });
   })();
 

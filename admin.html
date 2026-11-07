@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Admin · Medley Mbugua Kimani Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="admin">
+
+  <header class="admin-top">
+    <div class="container admin-top__inner">
+      <a href="index.html" class="nav__logo">MM</a>
+      <a href="index.html" class="admin-link">Back to portfolio</a>
+    </div>
+  </header>
+
+  <main class="container admin-main">
+    <p class="section-label">Owner</p>
+    <h1 class="section-heading admin-heading">Admin</h1>
+
+    <div class="admin-notice" id="configWarning" hidden>
+      Supabase is not configured yet. Add your project URL and publishable key to <code>config.js</code>.
+    </div>
+
+    <!-- LOGIN -->
+    <section class="admin-card" id="loginPanel" aria-labelledby="loginHeading">
+      <h2 class="admin-card__title" id="loginHeading">Sign in</h2>
+      <form class="admin-form" id="loginForm" autocomplete="on">
+        <label class="admin-field">Email
+          <input type="email" id="email" name="email" autocomplete="username" required />
+        </label>
+        <label class="admin-field">Password
+          <input type="password" id="password" name="password" autocomplete="current-password" required />
+        </label>
+        <button type="submit" class="admin-btn admin-btn--primary">Sign in</button>
+        <p class="admin-msg" id="authMessage" role="status" hidden></p>
+      </form>
+    </section>
+
+    <!-- EDITOR (shown only after sign-in and owner check) -->
+    <div id="adminPanel" hidden>
+      <div class="admin-topbar">
+        <p>Signed in as <strong id="whoami"></strong></p>
+        <button type="button" class="admin-btn" id="signOut">Sign out</button>
+      </div>
+      <p class="admin-msg" id="accessMessage" role="status" hidden></p>
+
+      <!-- MARKS -->
+      <section class="admin-card" aria-labelledby="marksHeading">
+        <h2 class="admin-card__title" id="marksHeading">Marks</h2>
+        <div class="admin-filters">
+          <label class="admin-field">Unit
+            <select id="marksUnit"></select>
+          </label>
+          <label class="admin-field">Type
+            <select id="marksKind">
+              <option value="CAT">CAT</option>
+              <option value="Exam">Exam</option>
+            </select>
+          </label>
+        </div>
+
+        <div id="marksList" class="admin-list"></div>
+
+        <h3 class="admin-subtitle">Add a record</h3>
+        <form class="admin-form" id="addMarkForm">
+          <div class="admin-grid admin-grid--marks">
+            <label class="admin-field">Assessment name or number
+              <input type="text" id="markName" maxlength="120" required />
+            </label>
+            <label class="admin-field">Marks obtained
+              <input type="number" id="markObtained" min="0" step="any" required />
+            </label>
+            <label class="admin-field">Total marks
+              <input type="number" id="markTotal" min="0.01" step="any" required />
+            </label>
+          </div>
+          <label class="admin-check"><input type="checkbox" id="markPublished" checked /> Publish on the website</label>
+          <button type="submit" class="admin-btn admin-btn--primary">Add record</button>
+          <p class="admin-msg" id="marksMessage" role="status" hidden></p>
+        </form>
+      </section>
+
+      <!-- PROJECTS -->
+      <section class="admin-card" aria-labelledby="projectsAdminHeading">
+        <h2 class="admin-card__title" id="projectsAdminHeading">Practical projects</h2>
+        <div class="admin-filters">
+          <label class="admin-field">Unit
+            <select id="projectUnit"></select>
+          </label>
+        </div>
+
+        <div id="projectList" class="admin-list"></div>
+
+        <h3 class="admin-subtitle">Add a project</h3>
+        <form class="admin-form" id="addProjectForm">
+          <label class="admin-field">Project title
+            <input type="text" id="projectTitle" maxlength="160" required />
+          </label>
+          <label class="admin-field">Short description
+            <textarea id="projectDesc" rows="3" maxlength="1000"></textarea>
+          </label>
+          <label class="admin-check"><input type="checkbox" id="projectPublished" checked /> Publish on the website</label>
+          <button type="submit" class="admin-btn admin-btn--primary">Add project</button>
+          <p class="admin-msg" id="projectMessage" role="status" hidden></p>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
+  <script src="config.js" defer></script>
+  <script src="admin.js" defer></script>
+</body>
+</html>
