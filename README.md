@@ -1,6 +1,6 @@
 # Medley Mbugua Kimani · Portfolio
 
-Personal portfolio for Medley Mbugua Kimani, Diploma in Industrial Mechatronics (admission number DIM/0433/26).
+Personal portfolio for Medley Mbugua Kimani, Diploma in Industrial Mechatronics.
 
 It is a single static page with no build step and no frameworks. It covers:
 
