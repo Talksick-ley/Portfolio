@@ -37,8 +37,42 @@
         <label class="admin-field">Password
           <input type="password" id="password" name="password" autocomplete="current-password" required />
         </label>
+        <div>
+          <button type="button" class="admin-linkbtn" id="showForgot" aria-controls="forgotPanel">Forgot password?</button>
+        </div>
         <button type="submit" class="admin-btn admin-btn--primary">Sign in</button>
         <p class="admin-msg" id="authMessage" role="status" hidden></p>
+      </form>
+    </section>
+
+    <!-- FORGOT PASSWORD: enter the admin email to receive a reset link -->
+    <section class="admin-card" id="forgotPanel" aria-labelledby="forgotHeading" hidden>
+      <h2 class="admin-card__title" id="forgotHeading">Reset password</h2>
+      <p class="admin-empty">Enter the email address for your admin account. If it belongs to an account, a reset link will be sent to it.</p>
+      <form class="admin-form" id="forgotForm">
+        <label class="admin-field">Email
+          <input type="email" id="forgotEmail" name="email" autocomplete="username" required />
+        </label>
+        <button type="submit" class="admin-btn admin-btn--primary">Send reset link</button>
+        <button type="button" class="admin-btn" id="forgotBack">Back to sign in</button>
+        <p class="admin-msg" id="forgotMessage" role="status" hidden></p>
+      </form>
+    </section>
+
+    <!-- NEW PASSWORD: shown only after opening a reset link from the email -->
+    <section class="admin-card" id="resetPanel" aria-labelledby="resetHeading" hidden>
+      <h2 class="admin-card__title" id="resetHeading">Choose a new password</h2>
+      <form class="admin-form" id="resetForm" novalidate>
+        <label class="admin-field">New password
+          <input type="password" id="newPassword" name="newPassword" autocomplete="new-password" minlength="12" required />
+        </label>
+        <label class="admin-field">Confirm new password
+          <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" minlength="12" required />
+        </label>
+        <p class="admin-empty">Use at least 12 characters.</p>
+        <button type="submit" class="admin-btn admin-btn--primary">Save new password</button>
+        <button type="button" class="admin-btn" id="resetCancel">Cancel</button>
+        <p class="admin-msg" id="resetMessage" role="status" hidden></p>
       </form>
     </section>
 
@@ -90,14 +124,8 @@
              Not connected yet. See the note inside the box. -->
         <div class="admin-upload admin-evidence" id="practicalEvidence" hidden>
           <h3 class="admin-subtitle">Evidence for practicals</h3>
-          <p class="admin-empty">Pictures, videos and PDFs for each practical will be uploaded here.
-            Upload is not active yet: storing PDFs and linking evidence to a practical mark needs one more
-            database change, which has not been applied. Practical marks can be saved now.</p>
-          <label class="admin-field">Evidence file (pictures, videos or PDF)
-            <input type="file" accept="image/*,video/*,application/pdf" disabled aria-describedby="practicalEvidenceNote" />
-          </label>
-          <p class="admin-msg" id="practicalEvidenceNote">Upload coming soon.</p>
-          <button type="button" class="admin-btn" disabled>Add evidence</button>
+          <p class="admin-empty">Practical marks are saved here. To attach pictures, videos, PDFs or other
+            files, use Unit evidence below, or add them to a project in Practical projects.</p>
         </div>
       </section>
 
@@ -123,6 +151,41 @@
           <label class="admin-check"><input type="checkbox" id="projectPublished" checked /> Publish on the website</label>
           <button type="submit" class="admin-btn admin-btn--primary">Add project</button>
           <p class="admin-msg" id="projectMessage" role="status" hidden></p>
+        </form>
+      </section>
+
+      <!-- UNIT EVIDENCE (portfolio of evidence, attached to a unit under a category) -->
+      <section class="admin-card" aria-labelledby="poeHeading">
+        <h2 class="admin-card__title" id="poeHeading">Unit evidence (portfolio of evidence)</h2>
+        <p class="admin-empty">Files for a whole unit: CAT, exam, practical or other evidence. Pictures, videos,
+          PDFs, and Word, Excel or PowerPoint files.</p>
+        <div class="admin-filters">
+          <label class="admin-field">Unit
+            <select id="poeUnit"></select>
+          </label>
+        </div>
+
+        <div id="poeList" class="admin-list"></div>
+
+        <h3 class="admin-subtitle">Add evidence</h3>
+        <form class="admin-form" id="addPoeForm">
+          <label class="admin-field">Category
+            <select id="poeCategory">
+              <option value="CAT">CAT</option>
+              <option value="Exam">Exam</option>
+              <option value="Practical">Practical</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+          <label class="admin-field">Title (optional, shown on the website)
+            <input type="text" id="poeTitle" maxlength="160" placeholder="e.g. CAT 1, scanned script" />
+          </label>
+          <label class="admin-field">File
+            <input type="file" id="poeFile" required accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,application/pdf,.pdf,.docx,.xlsx,.pptx" />
+          </label>
+          <label class="admin-check"><input type="checkbox" id="poePublished" checked /> Publish on the website</label>
+          <button type="submit" class="admin-btn admin-btn--primary">Upload evidence</button>
+          <p class="admin-msg" id="poeMessage" role="status" hidden></p>
         </form>
       </section>
     </div>

@@ -203,8 +203,35 @@
   const vClose = document.getElementById('viewerClose');
   let current = { project: null, index: 0, unitName: '', returnTo: null };
 
+  // Stored names look like "<uuid>-<original name>". Show the original name.
+  function displayName(path) {
+    const name = path.split('/').pop();
+    return name.length > 37 ? name.slice(37) : name;
+  }
+
   function mediaNode(item, projectTitle) {
     const url = publicUrl(item.storage_path);
+    if (item.kind === 'pdf') {
+      // Documents open in a new tab, so the visitor keeps the workbench open
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.className = 'viewer__pdf';
+      link.setAttribute('aria-label', 'Open PDF ' + displayName(item.storage_path) + ' in a new tab');
+      const badge = document.createElement('span');
+      badge.className = 'viewer__pdf-badge';
+      badge.textContent = 'PDF';
+      badge.setAttribute('aria-hidden', 'true');
+      const name = document.createElement('span');
+      name.className = 'viewer__pdf-name';
+      name.textContent = (item.alt_text || displayName(item.storage_path));
+      const open = document.createElement('span');
+      open.className = 'viewer__pdf-open';
+      open.textContent = 'Open PDF in a new tab';
+      link.append(badge, name, open);
+      return link;
+    }
     if (item.kind === 'video') {
       const video = document.createElement('video');
       video.controls = true;
@@ -234,7 +261,8 @@
       return;
     }
     vStage.append(mediaNode(media[current.index], current.project.title));
-    vCount.textContent = (current.index + 1) + ' of ' + media.length;
+    const kindNow = media[current.index].kind;
+    vCount.textContent = (current.index + 1) + ' of ' + media.length + (kindNow === 'pdf' ? ' · document' : '');
     const single = media.length < 2;
     vPrev.disabled = single || current.index === 0;
     vNext.disabled = single || current.index === media.length - 1;
@@ -290,6 +318,72 @@
     openViewer(project, drawerName(drawer), entry);
   });
 
+  // ── Portfolio of evidence (POE): per unit, any category ───
+  const POE_KIND_LABEL = { image: 'Image', video: 'Video', pdf: 'PDF', document: 'Document' };
+
+  function evidenceItem(item) {
+    const url = publicUrl(item.storage_path);
+    const name = displayName(item.storage_path);
+    const li = document.createElement('li');
+    li.className = 'poe-item';
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.className = 'poe-item__link';
+    link.setAttribute('aria-label', (item.title || name) + ' (' + (POE_KIND_LABEL[item.kind] || 'File') + ', opens in a new tab)');
+
+    if (item.kind === 'image') {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = '';
+      img.loading = 'lazy';
+      img.className = 'poe-item__thumb';
+      link.append(img);
+    }
+
+    const cat = document.createElement('span');
+    cat.className = 'poe-item__cat';
+    cat.textContent = item.category;
+
+    const title = document.createElement('span');
+    title.className = 'poe-item__title';
+    title.textContent = item.title || name;
+
+    const kind = document.createElement('span');
+    kind.className = 'poe-item__kind';
+    kind.textContent = POE_KIND_LABEL[item.kind] || 'File';
+
+    link.append(cat, title, kind);
+    li.append(link);
+    return li;
+  }
+
+  async function loadEvidence() {
+    const { data, error } = await client
+      .from('unit_evidence')
+      .select('id, category, title, kind, storage_path, sort, created_at, is_published, units!inner(slug)')
+      .eq('is_published', true)
+      .order('sort', { ascending: true })
+      .order('created_at', { ascending: true });
+
+    document.querySelectorAll('[data-unit-evidence]').forEach((list) => {
+      const slug = unitSlugOf(list);
+      const empty = list.closest('section').querySelector('[data-poe-empty]');
+      list.replaceChildren();
+      if (error) {
+        empty.hidden = false;
+        empty.textContent = 'Evidence could not be loaded right now.';
+        return;
+      }
+      const items = (data || []).filter((r) => r.is_published === true && r.units && r.units.slug === slug);
+      empty.hidden = items.length > 0;
+      items.forEach((item) => list.append(evidenceItem(item)));
+    });
+  }
+
+  loadEvidence().catch(() => {});
   loadMarks().catch(() => {});
   loadProjects().catch(() => {});
 })();

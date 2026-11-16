@@ -1351,3 +1351,104 @@ video.viewer__media { width: 100%; }
   .viewer__nav { display: grid; grid-template-columns: 1fr 1fr; }
   .viewer__count { grid-column: 1 / -1; text-align: center; order: -1; }
 }
+
+/* ── PDF EVIDENCE AND PASSWORD RECOVERY ────────────────────── */
+.admin-linkbtn {
+  padding: 0.2rem 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--red);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  justify-self: start;
+}
+.admin-linkbtn:hover { color: var(--red-hover); }
+
+.admin-pdf {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+  min-height: 9rem;
+  padding: 1rem;
+  background: var(--cream-2);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius);
+  color: var(--ink);
+  transition: background 0.25s var(--ease);
+}
+.admin-pdf:hover { background: var(--paper); }
+.admin-pdf__badge {
+  padding: 0.15rem 0.55rem;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--cream);
+  background: var(--red);
+  border-radius: 3px;
+}
+.admin-pdf__name { font-weight: 700; font-size: var(--fs-sm); overflow-wrap: anywhere; }
+.admin-pdf__open { font-size: var(--fs-xs); font-weight: 600; color: var(--red); }
+
+.viewer__pdf {
+  display: grid;
+  justify-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 420px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius);
+  color: var(--ink);
+  transition: background 0.25s var(--ease);
+}
+.viewer__pdf:hover { background: var(--cream); }
+.viewer__pdf-badge {
+  padding: 0.2rem 0.7rem;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--cream);
+  background: var(--red);
+  border-radius: 3px;
+}
+.viewer__pdf-name { font-weight: 700; font-size: var(--fs-base); overflow-wrap: anywhere; }
+.viewer__pdf-open { font-size: var(--fs-sm); font-weight: 600; color: var(--red); }
+
+/* ── PORTFOLIO OF EVIDENCE (per unit) and footer sign-in ──── */
+.cw-poe-list { list-style: none; display: grid; gap: 0.6rem; margin: 0; padding: 0; }
+.poe-item__link {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.8rem;
+  min-height: 52px;
+  padding: 0.7rem 0.9rem;
+  background: var(--cream);
+  border: 1.5px solid var(--rule);
+  border-radius: var(--radius);
+  color: var(--ink);
+  transition: border-color 0.25s var(--ease), box-shadow 0.3s var(--ease);
+}
+.poe-item__link:hover { border-color: var(--ink); box-shadow: 0 10px 18px -16px rgba(28, 26, 22, 0.6); }
+.poe-item__thumb {
+  width: 64px;
+  height: 48px;
+  object-fit: cover;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+}
+.poe-item__cat {
+  padding: 0.15rem 0.5rem;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--cream);
+  background: var(--ink);
+  border-radius: 3px;
+}
+.poe-item__title { flex: 1 1 10rem; min-width: 0; font-weight: 600; font-size: var(--fs-sm); overflow-wrap: anywhere; }
+.poe-item__kind { font-size: var(--fs-xs); font-weight: 600; color: var(--muted); }
+
+.footer__dot { color: inherit; text-decoration: none; opacity: 0.55; }
+.footer__dot:hover { opacity: 1; }
