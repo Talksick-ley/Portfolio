@@ -1452,3 +1452,32 @@ video.viewer__media { width: 100%; }
 
 .footer__dot { color: inherit; text-decoration: none; opacity: 0.55; }
 .footer__dot:hover { opacity: 1; }
+
+/* ── MULTI-FILE UPLOAD REPORT (admin) ──────────────────────── */
+.upload-report {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.9rem;
+  background: var(--cream);
+  border: 1.5px solid var(--rule);
+  border-radius: var(--radius);
+}
+.upload-report[hidden] { display: none; }
+.upload-report__summary { font-size: var(--fs-sm); font-weight: 700; }
+.upload-report__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.upload-report__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.15rem 0.6rem;
+  padding: 0.5rem 0.6rem;
+  font-size: var(--fs-sm);
+  border-left: 3px solid var(--rule);
+  background: var(--paper);
+}
+.upload-report__item--saved { border-left-color: var(--ink); }
+.upload-report__item--failed { border-left-color: var(--red); }
+.upload-report__item--uploading { border-left-color: var(--arc); }
+.upload-report__name { min-width: 0; overflow-wrap: anywhere; font-weight: 600; }
+.upload-report__status { font-size: var(--fs-xs); font-weight: 700; color: var(--muted); }
+.upload-report__item--failed .upload-report__status { color: var(--red); }
+.upload-report__error { grid-column: 1 / -1; font-size: var(--fs-xs); color: var(--red); overflow-wrap: anywhere; }

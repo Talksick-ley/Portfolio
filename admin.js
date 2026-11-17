@@ -10,28 +10,38 @@
   const cfg = window.PORTFOLIO_CONFIG || {};
   const bucket = cfg.MEDIA_BUCKET || 'portfolio-media';
   const MB = 1024 * 1024;
-  const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-  const VIDEO_TYPES = ['video/mp4', 'video/webm'];
-  const PDF_TYPES = ['application/pdf'];
-  const IMAGE_LIMIT = 10 * MB;
-  const VIDEO_LIMIT = 100 * MB;
-  // PDF evidence size limit. Change this one line to adjust it.
-  const PDF_LIMIT = 25 * MB;
-  // Word, Excel and PowerPoint evidence size limit. Change this one line to adjust it.
-  const DOCUMENT_LIMIT = 25 * MB;
-  const DOCUMENT_TYPES = [
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-  ];
-  const DOCUMENT_EXT = /\.(docx|xlsx|pptx)$/i;
-  const LIMITS = { image: IMAGE_LIMIT, video: VIDEO_LIMIT, pdf: PDF_LIMIT, document: DOCUMENT_LIMIT };
-  const KIND_LABEL = { image: 'image', video: 'video', pdf: 'PDF', document: 'Word, Excel or PowerPoint file' };
-  const UNIT_CATEGORIES = ['CAT', 'Exam', 'Practical', 'Other'];
-  const UNIT_KIND_LABEL = { image: 'Image', video: 'Video', pdf: 'PDF', document: 'Document' };
-  const PDF_SIGNATURE = '%PDF-';
+  // ── Evidence formats and limits (one place for every upload) ──
+  // Maximum file size per kind. Change a value here to adjust it.
+  const IMAGE_LIMIT = 10 * MB;     // JPG, JPEG, PNG, WebP, GIF
+  const VIDEO_LIMIT = 100 * MB;    // MP4, WebM
+  const DOCUMENT_LIMIT = 25 * MB;  // PDF, DOCX, XLSX, PPTX
   // Minimum length for a new admin password. Change this one line to adjust it.
   const MIN_PASSWORD = 12;
+  const MAX_INSPECT_BYTES = 64 * 1024;   // how much of each file is read to verify its format
+  const WORD_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  const EXCEL_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  const POWERPOINT_MIME = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+  const UNIT_CATEGORIES = ['CAT', 'Exam', 'Practical', 'Other'];
+  // Every supported format. The extension selects the rule, the file contents are checked
+  // against it, and the stored MIME type comes from here rather than from the browser.
+  const FORMATS = {
+    jpg:  { kind: 'image', mime: 'image/jpeg', limit: IMAGE_LIMIT, magic: [[0, [0xFF, 0xD8, 0xFF]]] },
+    jpeg: { kind: 'image', mime: 'image/jpeg', limit: IMAGE_LIMIT, magic: [[0, [0xFF, 0xD8, 0xFF]]] },
+    png:  { kind: 'image', mime: 'image/png', limit: IMAGE_LIMIT, magic: [[0, [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]]] },
+    gif:  { kind: 'image', mime: 'image/gif', limit: IMAGE_LIMIT, magic: [[0, 'GIF8']] },
+    webp: { kind: 'image', mime: 'image/webp', limit: IMAGE_LIMIT, magic: [[0, 'RIFF'], [8, 'WEBP']] },
+    mp4:  { kind: 'video', mime: 'video/mp4', limit: VIDEO_LIMIT, magic: [[4, 'ftyp']] },
+    webm: { kind: 'video', mime: 'video/webm', limit: VIDEO_LIMIT, magic: [[0, [0x1A, 0x45, 0xDF, 0xA3]]] },
+    pdf:  { kind: 'pdf', mime: 'application/pdf', limit: DOCUMENT_LIMIT, magic: [[0, '%PDF-']] },
+    docx: { kind: 'document', mime: WORD_MIME, limit: DOCUMENT_LIMIT, magic: [[0, [0x50, 0x4B, 0x03, 0x04]]], inside: 'word/' },
+    xlsx: { kind: 'document', mime: EXCEL_MIME, limit: DOCUMENT_LIMIT, magic: [[0, [0x50, 0x4B, 0x03, 0x04]]], inside: 'xl/' },
+    pptx: { kind: 'document', mime: POWERPOINT_MIME, limit: DOCUMENT_LIMIT, magic: [[0, [0x50, 0x4B, 0x03, 0x04]]], inside: 'ppt/' }
+  };
+  const SUPPORTED_LIST = 'JPG, JPEG, PNG, WebP, GIF, MP4, WebM, PDF, DOCX, XLSX or PPTX';
+  // Accept list for file pickers (extensions and MIME types)
+  const ACCEPT = Object.keys(FORMATS).map((e) => '.' + e)
+    .concat(Object.values(FORMATS).map((f) => f.mime))
+    .filter((v, i, a) => a.indexOf(v) === i).join(',');
 
   const $ = (id) => document.getElementById(id);
   const configured =
@@ -83,40 +93,174 @@
     return client.storage.from(bucket).getPublicUrl(path).data.publicUrl;
   }
 
-  // Decide the media kind from the file. Returns 'image', 'video', 'pdf' or null.
-  function mediaKindFor(file) {
-    if (IMAGE_TYPES.includes(file.type)) return 'image';
-    if (VIDEO_TYPES.includes(file.type)) return 'video';
-    if (PDF_TYPES.includes(file.type)) return 'pdf';
-    // Some phones report an empty type for PDFs; accept by extension in that case only
-    if (!file.type && /\.pdf$/i.test(file.name)) return 'pdf';
-    return null;
-  }
+  const bytesMatch = (bytes, offset, expected) => {
+    const want = typeof expected === 'string' ? Array.from(expected, (c) => c.charCodeAt(0)) : expected;
+    return want.every((b, k) => bytes[offset + k] === b);
+  };
 
-  // Unit evidence accepts everything project media does, plus Office documents.
-  function unitKindFor(file) {
-    const kind = mediaKindFor(file);
-    if (kind) return kind;
-    if (DOCUMENT_TYPES.includes(file.type) || (!file.type && DOCUMENT_EXT.test(file.name))) return 'document';
-    return null;
-  }
-
-  // Word, Excel and PowerPoint files are ZIP archives, which start with "PK".
-  async function looksLikeOfficeFile(file) {
-    const head = new Uint8Array(await file.slice(0, 2).arrayBuffer());
-    return head[0] === 0x50 && head[1] === 0x4B;
-  }
-
-  // A real PDF starts with "%PDF-". This catches renamed non-PDF files.
-  async function looksLikePdf(file) {
-    const head = new Uint8Array(await file.slice(0, 5).arrayBuffer());
-    return String.fromCharCode(...head) === PDF_SIGNATURE;
+  // Checks one file against its format rule. Returns { ok, kind, contentType } or { ok: false, message }.
+  async function inspectFile(file) {
+    const name = file.name || 'file';
+    const dot = name.lastIndexOf('.');
+    const ext = dot > 0 ? name.slice(dot + 1).toLowerCase() : '';
+    const rule = FORMATS[ext];
+    if (!rule) return { ok: false, message: name + ': not a supported type. Use ' + SUPPORTED_LIST + '.' };
+    if (file.size === 0) return { ok: false, message: name + ': the file is empty.' };
+    if (file.size > rule.limit) {
+      return { ok: false, message: name + ': larger than ' + (rule.limit / MB) + ' MB. Compress it or choose a smaller file.' };
+    }
+    const head = new Uint8Array(await file.slice(0, MAX_INSPECT_BYTES).arrayBuffer());
+    if (!rule.magic.every(([offset, expected]) => bytesMatch(head, offset, expected))) {
+      return { ok: false, message: name + ': the contents do not match a ' + ext.toUpperCase() + ' file. It may have been renamed.' };
+    }
+    if (rule.inside) {
+      const text = Array.from(head, (b) => String.fromCharCode(b)).join('');
+      if (!text.includes(rule.inside)) {
+        return { ok: false, message: name + ': this is a zip archive but not a valid ' + ext.toUpperCase() + ' file.' };
+      }
+    }
+    return { ok: true, kind: rule.kind, contentType: rule.mime };
   }
 
   // Stored names look like "<uuid>-<original name>". Show the original name.
   function displayName(path) {
     const name = path.split('/').pop();
     return name.length > 37 ? name.slice(37) : name;
+  }
+
+  // Short label for a stored file: Image, Video, PDF, or the Office extension (DOCX, XLSX, PPTX)
+  function typeLabel(kind, path) {
+    if (kind === 'document') {
+      const ext = (displayName(path).split('.').pop() || '').toUpperCase();
+      return ext || 'Document';
+    }
+    return { image: 'Image', video: 'Video', pdf: 'PDF' }[kind] || 'File';
+  }
+
+  function safeName(name) {
+    return name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(-80);
+  }
+
+  // Title for one file in a batch. A typed title is used as-is for one file,
+  // or as a prefix ("Title – file name") when several files are chosen.
+  function titleFor(file, count, typed) {
+    const base = file.name.replace(/\.[^.]+$/, '');
+    if (!typed) return base.slice(0, 160);
+    return (count === 1 ? typed : typed + ' – ' + base).slice(0, 160);
+  }
+
+  // Shows a readable preview for an image, video, PDF or Office document
+  function previewFor(kind, url, name, alt, path) {
+    if (kind === 'video') return h('video', { src: url, controls: true, preload: 'metadata', class: 'admin-preview' });
+    if (kind === 'image') return h('img', { src: url, alt: alt, loading: 'lazy', class: 'admin-preview' });
+    return h('a', { href: url, target: '_blank', rel: 'noopener noreferrer', class: 'admin-pdf',
+      'aria-label': 'Open ' + name + ' in a new tab' },
+      h('span', { class: 'admin-pdf__badge', text: typeLabel(kind, path), 'aria-hidden': 'true' }),
+      h('span', { class: 'admin-pdf__name', text: name }),
+      h('span', { class: 'admin-pdf__open', text: 'Open in a new tab' }));
+  }
+
+  // ── Multi-file uploader ──────────────────────────────────
+  // Files are processed one at a time: check, store, then record. If the record cannot be
+  // saved, the stored copy is removed so no orphan file is left. Failed files stay in the
+  // report and can be retried without uploading the saved ones again.
+  let uploadBusy = false;
+  // Upload reports for project cards. Kept across list refreshes, so the outcome of an upload
+  // (including failed files and their Retry button) stays visible until the next upload.
+  const projectReports = new Map();
+
+  function setControls(controls, busy) {
+    controls.forEach((c) => { c.disabled = busy; });
+  }
+
+  function storageMessage(error) {
+    const text = (error && error.message ? error.message : '').toLowerCase();
+    if (/mime|not supported|invalid.*type/.test(text)) {
+      return 'Supabase Storage does not allow this file type. Run the evidence migration, and check the portfolio-media bucket\'s allowed types.';
+    }
+    if (/exceed|too large|maximum allowed size/.test(text)) {
+      return 'This file is larger than the storage limit set in Supabase for portfolio-media.';
+    }
+    return fail(error, 'Upload failed.');
+  }
+
+  function drawReport(batch) {
+    const el = batch.reportEl;
+    el.replaceChildren();
+    el.hidden = false;
+    const saved = batch.items.filter((i) => i.status === 'saved').length;
+    const failed = batch.items.filter((i) => i.status === 'failed');
+    const done = saved + failed.length;
+    const summary = batch.running
+      ? 'Uploading ' + (done + 1) + ' of ' + batch.items.length + '…'
+      : (saved + ' saved' + (failed.length ? ', ' + failed.length + ' failed.' : '.'));
+    const labels = { waiting: 'Waiting', uploading: 'Uploading…', saved: 'Saved', failed: 'Failed' };
+    el.append(h('p', { class: 'upload-report__summary', text: summary }));
+    el.append(h('ul', { class: 'upload-report__list' }, batch.items.map((item) =>
+      h('li', { class: 'upload-report__item upload-report__item--' + item.status },
+        h('span', { class: 'upload-report__name', text: item.file.name }),
+        h('span', { class: 'upload-report__status', text: labels[item.status] }),
+        item.status === 'failed' ? h('span', { class: 'upload-report__error', text: item.message }) : null))));
+    if (!batch.running && failed.length) {
+      el.append(h('button', { type: 'button', class: 'admin-btn admin-btn--primary', text: 'Retry ' + failed.length + ' failed', onclick: () => {
+        batch.items.forEach((i) => { if (i.status === 'failed') i.status = 'waiting'; });
+        runBatch(batch);
+      } }));
+    }
+  }
+
+  // Validates, stores and records one file. Returns { ok, message }.
+  async function saveOne(item, batch) {
+    const check = await inspectFile(item.file);
+    if (!check.ok) return { ok: false, message: check.message };
+
+    const path = batch.prefix + crypto.randomUUID() + '-' + safeName(item.file.name);
+    const { error: upErr } = await client.storage.from(bucket).upload(path, item.file, {
+      contentType: check.contentType, upsert: false, cacheControl: '3600'
+    });
+    if (upErr) return { ok: false, message: storageMessage(upErr) };
+
+    const { error: rowErr } = await client.from(batch.table).insert(batch.buildRow(item, check, path));
+    if (rowErr) {
+      const { error: cleanErr } = await client.storage.from(bucket).remove([path]);
+      return { ok: false, message: fail(rowErr, 'Could not save the record.') +
+        (cleanErr ? ' The stored copy could not be removed. Delete this path in Storage: ' + path
+                  : ' The file was not kept.') };
+    }
+    return { ok: true };
+  }
+
+  async function runBatch(batch) {
+    if (uploadBusy) return say(batch.msgEl, 'An upload is already in progress. Wait for it to finish.', true);
+    uploadBusy = true;
+    batch.running = true;
+    setControls(batch.controls, true);
+    try {
+      drawReport(batch);
+      for (const item of batch.items) {
+        if (item.status !== 'waiting') continue;   // saved items are never uploaded again
+        item.status = 'uploading';
+        drawReport(batch);
+        const result = await saveOne(item, batch);
+        item.status = result.ok ? 'saved' : 'failed';
+        item.message = result.ok ? '' : result.message;
+        drawReport(batch);
+      }
+    } finally {
+      batch.running = false;
+      uploadBusy = false;
+      setControls(batch.controls, false);
+      drawReport(batch);
+      if (batch.onDone) batch.onDone(batch);
+    }
+  }
+
+  // Starts a batch from the chosen files. Returns when the batch has finished.
+  function startBatch(options) {
+    const batch = Object.assign({ running: false }, options, {
+      items: Array.from(options.files, (f) => ({ file: f, status: 'waiting', message: '' }))
+    });
+    return runBatch(batch);
   }
 
   // ── Screens ──────────────────────────────────────────────
@@ -312,6 +456,8 @@
   $('marksUnit').addEventListener('change', loadMarks);
   $('marksKind').addEventListener('change', () => { fillMarksUnits(); loadMarks(); });
   $('poeUnit').addEventListener('change', loadUnitEvidence);
+  // File pickers only offer the supported formats (also enforced on upload)
+  $('poeFile').setAttribute('accept', ACCEPT);
   $('projectUnit').addEventListener('change', loadProjects);
 
   // ── Marks ────────────────────────────────────────────────
@@ -440,14 +586,14 @@
 
     const remove = h('button', { type: 'button', class: 'admin-btn admin-btn--danger', text: 'Delete project', onclick: async () => {
       if (!confirm('Delete this project and all its files?')) return;
-      // Remove files from storage first, then the project (media rows cascade)
+      // Remove the project record first (its media rows cascade), then its stored files
       const paths = (p.project_media || []).map((m) => m.storage_path);
-      if (paths.length) {
-        const { error: storageErr } = await client.storage.from(bucket).remove(paths);
-        if (storageErr) return say(msg, fail(storageErr, 'Could not delete the files.'), true);
-      }
       const { error } = await client.from('projects').delete().eq('id', p.id);
       if (error) return say(msg, fail(error, 'Could not delete the project.'), true);
+      if (paths.length) {
+        const { error: storageErr } = await client.storage.from(bucket).remove(paths);
+        if (storageErr) return say(msg, 'The project was removed, but its files could not be deleted. Delete these paths in Storage: ' + paths.join(', '), true);
+      }
       loadProjects();
     } });
 
@@ -455,14 +601,27 @@
       (p.project_media || []).sort((a, b) => a.sort - b.sort).map((m) => mediaItem(m, p)));
 
     const uploadMsg = h('p', { class: 'admin-msg', hidden: true, role: 'status' });
-    const fileInput = h('input', { type: 'file', accept: IMAGE_TYPES.concat(VIDEO_TYPES, PDF_TYPES, ['.pdf']).join(','), 'aria-label': 'Image, video or PDF file' });
+    const reportEl = projectReports.get(p.id) ||
+      h('div', { class: 'upload-report', hidden: true, 'aria-live': 'polite' });
+    projectReports.set(p.id, reportEl);
+    const fileInput = h('input', { type: 'file', multiple: true, accept: ACCEPT, 'aria-label': 'Images, videos, PDFs or Word, Excel or PowerPoint files' });
     const alt = h('input', { type: 'text', maxlength: 200, placeholder: 'Describe the image (optional)', 'aria-label': 'Alt text for the image' });
-    const upload = h('button', { type: 'button', class: 'admin-btn admin-btn--primary', text: 'Upload file', onclick: async () => {
-      const file = fileInput.files && fileInput.files[0];
-      if (!file) return say(uploadMsg, 'Choose an image, video or PDF first.', true);
-      await uploadMedia(p, file, alt.value, uploadMsg);
-      fileInput.value = '';
-      alt.value = '';
+    const upload = h('button', { type: 'button', class: 'admin-btn admin-btn--primary', text: 'Upload files', onclick: () => {
+      const files = Array.from(fileInput.files || []);
+      if (!files.length) return say(uploadMsg, 'Choose one or more files first.', true);
+      say(uploadMsg, '');
+      startBatch({
+        files, reportEl, msgEl: uploadMsg, controls: [upload], prefix: p.id + '/', table: 'project_media',
+        buildRow: (item, check, path) => ({ project_id: p.id, kind: check.kind, storage_path: path,
+          alt_text: alt.value.trim(), is_published: true }),
+        onDone: (batch) => {
+          if (batch.items.every((i) => i.status === 'saved')) {
+            fileInput.value = '';
+            alt.value = '';
+          }
+          loadProjects();
+        }
+      });
     } });
 
     return h('article', { class: 'admin-project' },
@@ -475,26 +634,16 @@
       h('h4', { class: 'admin-subtitle', text: 'Images, videos and PDFs' }),
       mediaList,
       h('div', { class: 'admin-upload' },
-        h('label', { class: 'admin-field' }, 'Add image, video or PDF', fileInput),
-        h('label', { class: 'admin-field' }, 'Alt text', alt),
+        h('label', { class: 'admin-field' }, 'Add images, videos, PDFs or Office files (select several at once)', fileInput),
+        h('label', { class: 'admin-field' }, 'Alt text (applied to every file in this upload)', alt),
         upload),
-      uploadMsg);
+      uploadMsg, reportEl);
   }
 
   function mediaItem(m, project) {
     const url = publicUrl(m.storage_path);
-    let preview;
-    if (m.kind === 'video') {
-      preview = h('video', { src: url, controls: true, preload: 'metadata', class: 'admin-preview' });
-    } else if (m.kind === 'pdf') {
-      preview = h('a', { href: url, target: '_blank', rel: 'noopener noreferrer', class: 'admin-pdf',
-        'aria-label': 'Open PDF ' + displayName(m.storage_path) + ' in a new tab' },
-        h('span', { class: 'admin-pdf__badge', text: 'PDF', 'aria-hidden': 'true' }),
-        h('span', { class: 'admin-pdf__name', text: displayName(m.storage_path) }),
-        h('span', { class: 'admin-pdf__open', text: 'Open PDF in a new tab' }));
-    } else {
-      preview = h('img', { src: url, alt: m.alt_text || project.title, loading: 'lazy', class: 'admin-preview' });
-    }
+    const name = displayName(m.storage_path);
+    const preview = previewFor(m.kind, url, name, m.alt_text || project.title, m.storage_path);
     const msg = h('p', { class: 'admin-msg', hidden: true, role: 'status' });
 
     const published = h('input', { type: 'checkbox', checked: m.is_published, onchange: async () => {
@@ -503,69 +652,29 @@
       say(msg, published.checked ? 'Shown on the website.' : 'Hidden from the website.');
     } });
 
+    const description = h('input', { type: 'text', maxlength: 200, value: m.alt_text || '', 'aria-label': 'Description (alt text)' });
+    const saveDescription = h('button', { type: 'button', class: 'admin-btn', text: 'Save description', onclick: async () => {
+      const { error } = await client.from('project_media').update({ alt_text: description.value.trim() }).eq('id', m.id);
+      if (error) return say(msg, fail(error, 'Could not save.'), true);
+      say(msg, 'Saved.');
+    } });
+
     const remove = h('button', { type: 'button', class: 'admin-btn admin-btn--danger', text: 'Delete file', onclick: async () => {
-      if (!confirm('Delete this ' + KIND_LABEL[m.kind] + '? This also removes its stored file.')) return;
-      const { error: storageErr } = await client.storage.from(bucket).remove([m.storage_path]);
-      if (storageErr) return say(msg, fail(storageErr, 'Could not delete the file.'), true);
+      if (!confirm('Delete this ' + typeLabel(m.kind, m.storage_path).toLowerCase() + '? This also removes its stored file.')) return;
+      // Record first, so the site never links to a missing file; then the stored file
       const { error } = await client.from('project_media').delete().eq('id', m.id);
       if (error) return say(msg, fail(error, 'Could not remove the record.'), true);
+      const { error: storageErr } = await client.storage.from(bucket).remove([m.storage_path]);
+      if (storageErr) return say(msg, 'The record was removed, but its stored file could not be deleted. Delete this path in Storage: ' + m.storage_path, true);
       loadProjects();
     } });
 
     return h('div', { class: 'admin-media' },
       preview,
       h('label', { class: 'admin-check' }, published, ' Published'),
-      h('div', { class: 'admin-actions' }, remove),
+      h('label', { class: 'admin-field' }, 'Description', description),
+      h('div', { class: 'admin-actions' }, saveDescription, remove),
       msg);
-  }
-
-  async function uploadMedia(project, file, altText, msgEl) {
-    const kind = mediaKindFor(file);
-    if (!kind) return say(msgEl, 'Use a JPG, PNG, WebP or GIF image, an MP4 or WebM video, or a PDF document.', true);
-
-    const label = KIND_LABEL[kind];
-    if (file.size === 0) return say(msgEl, 'This file is empty. Choose a different file.', true);
-    if (file.size > LIMITS[kind]) {
-      return say(msgEl, 'This ' + label + ' is larger than ' + (LIMITS[kind] / MB) + ' MB. Compress it or choose a smaller file.', true);
-    }
-    if (kind === 'pdf' && !(await looksLikePdf(file))) {
-      return say(msgEl, 'This file is not a valid PDF. Export it again and try once more.', true);
-    }
-
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(-80);
-    const path = project.id + '/' + crypto.randomUUID() + '-' + safeName;
-
-    say(msgEl, 'Uploading ' + label + '…');
-    const { error: uploadErr } = await client.storage.from(bucket).upload(path, file, {
-      contentType: kind === 'pdf' ? 'application/pdf' : file.type,
-      upsert: false,
-      cacheControl: '3600'
-    });
-    if (uploadErr) {
-      const text = (uploadErr.message || '').toLowerCase();
-      if (/mime|not supported|invalid.*type/.test(text)) {
-        return say(msgEl, 'Supabase Storage does not allow this file type yet. Add application/pdf to the portfolio-media bucket\'s allowed types (see the setup guide).', true);
-      }
-      if (/exceed|too large|maximum allowed size/.test(text)) {
-        return say(msgEl, 'This file is larger than the storage limit set in Supabase for portfolio-media.', true);
-      }
-      return say(msgEl, fail(uploadErr, 'Upload failed.'), true);
-    }
-
-    const { error: rowErr } = await client.from('project_media').insert({
-      project_id: project.id,
-      kind: kind,
-      storage_path: path,
-      alt_text: altText.trim(),
-      is_published: true
-    });
-    if (rowErr) {
-      await client.storage.from(bucket).remove([path]);   // do not leave an orphan file
-      return say(msgEl, fail(rowErr, 'Could not save the file record.'), true);
-    }
-
-    say(msgEl, 'Uploaded.');
-    loadProjects();
   }
 
   // ── Unit evidence (portfolio of evidence) ─────────────────
@@ -590,18 +699,7 @@
   function unitEvidenceRow(item) {
     const url = publicUrl(item.storage_path);
     const name = displayName(item.storage_path);
-    let preview;
-    if (item.kind === 'image') {
-      preview = h('img', { src: url, alt: item.title || name, loading: 'lazy', class: 'admin-preview' });
-    } else if (item.kind === 'video') {
-      preview = h('video', { src: url, controls: true, preload: 'metadata', class: 'admin-preview' });
-    } else {
-      preview = h('a', { href: url, target: '_blank', rel: 'noopener noreferrer', class: 'admin-pdf',
-        'aria-label': 'Open ' + name + ' in a new tab' },
-        h('span', { class: 'admin-pdf__badge', text: UNIT_KIND_LABEL[item.kind] || 'File', 'aria-hidden': 'true' }),
-        h('span', { class: 'admin-pdf__name', text: name }),
-        h('span', { class: 'admin-pdf__open', text: 'Open in a new tab' }));
-    }
+    const preview = previewFor(item.kind, url, name, item.title || name, item.storage_path);
 
     const title = h('input', { type: 'text', maxlength: 160, value: item.title || '', 'aria-label': 'Title shown on the website' });
     const category = h('select', { 'aria-label': 'Category' },
@@ -620,11 +718,12 @@
     } });
 
     const remove = h('button', { type: 'button', class: 'admin-btn admin-btn--danger', text: 'Delete file', onclick: async () => {
-      if (!confirm('Delete this ' + (UNIT_KIND_LABEL[item.kind] || 'file').toLowerCase() + '? This also removes its stored file.')) return;
-      const { error: storageErr } = await client.storage.from(bucket).remove([item.storage_path]);
-      if (storageErr) return say(msg, fail(storageErr, 'Could not delete the file.'), true);
+      if (!confirm('Delete this ' + typeLabel(item.kind, item.storage_path).toLowerCase() + '? This also removes its stored file.')) return;
+      // Record first, so the public page never links to a missing file; then the stored file
       const { error } = await client.from('unit_evidence').delete().eq('id', item.id);
       if (error) return say(msg, fail(error, 'Could not remove the record.'), true);
+      const { error: storageErr } = await client.storage.from(bucket).remove([item.storage_path]);
+      if (storageErr) return say(msg, 'The record was removed, but its stored file could not be deleted. Delete this path in Storage: ' + item.storage_path, true);
       loadUnitEvidence();
     } });
 
@@ -638,64 +737,40 @@
       msg);
   }
 
-  $('addPoeForm').addEventListener('submit', async (e) => {
+  $('addPoeForm').addEventListener('submit', (e) => {
     e.preventDefault();
-    const msgEl = $('poeMessage');
     const unitId = Number($('poeUnit').value);
-    const file = $('poeFile').files && $('poeFile').files[0];
-    if (!unitId) return say(msgEl, 'Choose a unit first.', true);
-    if (!file) return say(msgEl, 'Choose a file first.', true);
+    const files = Array.from($('poeFile').files || []);
+    if (!unitId) return say($('poeMessage'), 'Choose a unit first.', true);
+    if (!files.length) return say($('poeMessage'), 'Choose one or more files first.', true);
+    say($('poeMessage'), '');
 
-    const kind = unitKindFor(file);
-    if (!kind) return say(msgEl, 'Use a JPG, PNG, WebP or GIF image, an MP4 or WebM video, a PDF, or a Word, Excel or PowerPoint file.', true);
-    if (file.size === 0) return say(msgEl, 'This file is empty. Choose a different file.', true);
-    if (file.size > LIMITS[kind]) {
-      return say(msgEl, 'This ' + KIND_LABEL[kind] + ' is larger than ' + (LIMITS[kind] / MB) + ' MB. Compress it or choose a smaller file.', true);
-    }
-    if (kind === 'pdf' && !(await looksLikePdf(file))) {
-      return say(msgEl, 'This file is not a valid PDF. Export it again and try once more.', true);
-    }
-    if (kind === 'document' && !(await looksLikeOfficeFile(file))) {
-      return say(msgEl, 'This file is not a valid Word, Excel or PowerPoint file. Save it again and try once more.', true);
-    }
-
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(-80);
-    const path = 'units/' + unitId + '/' + crypto.randomUUID() + '-' + safeName;
-    const contentType = kind === 'pdf' ? 'application/pdf'
-      : kind === 'document' && !file.type ? 'application/octet-stream' : file.type;
-
-    say(msgEl, 'Uploading ' + KIND_LABEL[kind] + '…');
-    const { error: uploadErr } = await client.storage.from(bucket).upload(path, file, {
-      contentType: contentType, upsert: false, cacheControl: '3600'
-    });
-    if (uploadErr) {
-      const text = (uploadErr.message || '').toLowerCase();
-      if (/mime|not supported|invalid.*type/.test(text)) {
-        return say(msgEl, 'Supabase Storage does not allow this file type yet. Run the unit evidence migration, which adds Office file types to the portfolio-media bucket.', true);
+    const typed = $('poeTitle').value.trim();
+    const category = $('poeCategory').value;
+    const published = $('poePublished').checked;
+    startBatch({
+      files,
+      reportEl: $('poeReport'),
+      msgEl: $('poeMessage'),
+      controls: [$('poeSubmit')],
+      prefix: 'units/' + unitId + '/',
+      table: 'unit_evidence',
+      buildRow: (item, check, path) => ({
+        unit_id: unitId,
+        category: category,
+        title: titleFor(item.file, files.length, typed),
+        kind: check.kind,
+        storage_path: path,
+        is_published: published
+      }),
+      onDone: (batch) => {
+        if (batch.items.every((i) => i.status === 'saved')) {
+          $('poeFile').value = '';
+          $('poeTitle').value = '';
+        }
+        loadUnitEvidence();
       }
-      if (/exceed|too large|maximum allowed size/.test(text)) {
-        return say(msgEl, 'This file is larger than the storage limit set in Supabase for portfolio-media.', true);
-      }
-      return say(msgEl, fail(uploadErr, 'Upload failed.'), true);
-    }
-
-    const { error: rowErr } = await client.from('unit_evidence').insert({
-      unit_id: unitId,
-      category: $('poeCategory').value,
-      title: $('poeTitle').value.trim(),
-      kind: kind,
-      storage_path: path,
-      is_published: $('poePublished').checked
     });
-    if (rowErr) {
-      await client.storage.from(bucket).remove([path]);   // do not leave an orphan file
-      return say(msgEl, fail(rowErr, 'Could not save the evidence record.'), true);
-    }
-
-    e.target.reset();
-    $('poePublished').checked = true;
-    say(msgEl, 'Evidence uploaded.');
-    loadUnitEvidence();
   });
 
   $('addProjectForm').addEventListener('submit', async (e) => {

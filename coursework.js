@@ -209,26 +209,35 @@
     return name.length > 37 ? name.slice(37) : name;
   }
 
+  // Short label for a stored file: Image, Video, PDF, or the Office extension (DOCX, XLSX, PPTX)
+  function typeLabel(kind, path) {
+    if (kind === 'document') {
+      const ext = (displayName(path).split('.').pop() || '').toUpperCase();
+      return ext || 'Document';
+    }
+    return { image: 'Image', video: 'Video', pdf: 'PDF' }[kind] || 'File';
+  }
+
   function mediaNode(item, projectTitle) {
     const url = publicUrl(item.storage_path);
-    if (item.kind === 'pdf') {
+    if (item.kind === 'pdf' || item.kind === 'document') {
       // Documents open in a new tab, so the visitor keeps the workbench open
       const link = document.createElement('a');
       link.href = url;
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
       link.className = 'viewer__pdf';
-      link.setAttribute('aria-label', 'Open PDF ' + displayName(item.storage_path) + ' in a new tab');
+      link.setAttribute('aria-label', 'Open ' + displayName(item.storage_path) + ' in a new tab');
       const badge = document.createElement('span');
       badge.className = 'viewer__pdf-badge';
-      badge.textContent = 'PDF';
+      badge.textContent = typeLabel(item.kind, item.storage_path);
       badge.setAttribute('aria-hidden', 'true');
       const name = document.createElement('span');
       name.className = 'viewer__pdf-name';
       name.textContent = (item.alt_text || displayName(item.storage_path));
       const open = document.createElement('span');
       open.className = 'viewer__pdf-open';
-      open.textContent = 'Open PDF in a new tab';
+      open.textContent = 'Open in a new tab';
       link.append(badge, name, open);
       return link;
     }
@@ -262,7 +271,7 @@
     }
     vStage.append(mediaNode(media[current.index], current.project.title));
     const kindNow = media[current.index].kind;
-    vCount.textContent = (current.index + 1) + ' of ' + media.length + (kindNow === 'pdf' ? ' · document' : '');
+    vCount.textContent = (current.index + 1) + ' of ' + media.length + (kindNow === 'pdf' || kindNow === 'document' ? ' · document' : '');
     const single = media.length < 2;
     vPrev.disabled = single || current.index === 0;
     vNext.disabled = single || current.index === media.length - 1;
@@ -353,7 +362,7 @@
 
     const kind = document.createElement('span');
     kind.className = 'poe-item__kind';
-    kind.textContent = POE_KIND_LABEL[item.kind] || 'File';
+    kind.textContent = typeLabel(item.kind, item.storage_path);
 
     link.append(cat, title, kind);
     li.append(link);
